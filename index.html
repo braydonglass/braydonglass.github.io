@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Braydon Glass — CS Graduate, IT Support &amp; Software</title>
-<meta name="description" content="Braydon Glass — Computer Science graduate in Philadelphia. IT support, troubleshooting, SQL and Python projects.">
+<title>Braydon Glass · CS Graduate, IT Support &amp; Software</title>
+<meta name="description" content="Braydon Glass. Computer Science graduate in Philadelphia. IT support, troubleshooting, SQL and Python projects.">
 <style>
 /* ============================================================
    TOKENS
@@ -58,17 +58,88 @@ body{
   overflow-x:hidden;
 }
 
-/* Scroll-reactive backdrop: the whole page temperature shifts as you descend */
+/* Base wash. Scroll-reactive: the page temperature shifts as you descend */
 body::before{
   content:"";
-  position:fixed; inset:0; z-index:-3;
+  position:fixed; inset:0; z-index:-4;
   background:
     radial-gradient(120% 80% at 50% calc(0% + var(--sp) * 70%),
-        rgba(29,78,216, calc(.20 + var(--sp) * .12)) 0%, transparent 60%),
-    radial-gradient(90% 60% at calc(10% + var(--sp) * 80%) 100%,
-        rgba(15,50,100, .28) 0%, transparent 65%),
+        rgba(29,78,216, calc(.18 + var(--sp) * .10)) 0%, transparent 60%),
     linear-gradient(180deg, #04070d 0%, #060b16 45%, #04080f 100%);
   transition:background .2s linear;
+}
+
+/* ---- Aurora: drifting colour fields, parallaxed by scroll ---- */
+.aurora{
+  position:fixed; inset:-12%; z-index:-3; pointer-events:none;
+  overflow:hidden;
+  /* scroll parallax on Y, cursor parallax on both axes */
+  transform:translate3d(
+      calc(var(--ax, 0) * 30px),
+      calc(var(--sp) * -140px + var(--ay, 0) * 22px),
+      0);
+  opacity:calc(.82 + var(--sp) * .18);
+  will-change:transform;
+}
+.aurora b{
+  position:absolute; display:block; border-radius:50%;
+  mix-blend-mode:screen; will-change:transform;
+}
+/* radial-gradient blobs need no blur filter, so they stay cheap to composite */
+.aurora .b1{
+  width:62vw; height:62vw; top:-14%; left:-10%;
+  background:radial-gradient(circle, rgba(34,211,238,.62) 0%, rgba(34,211,238,.22) 38%, transparent 68%);
+  animation:drift1 34s ease-in-out infinite;
+}
+.aurora .b2{
+  width:58vw; height:58vw; top:-6%; right:-12%;
+  background:radial-gradient(circle, rgba(139,92,246,.58) 0%, rgba(109,40,217,.20) 40%, transparent 70%);
+  animation:drift2 41s ease-in-out infinite;
+}
+.aurora .b3{
+  width:70vw; height:70vw; bottom:-24%; left:12%;
+  background:radial-gradient(circle, rgba(59,130,246,.56) 0%, rgba(37,99,235,.20) 42%, transparent 70%);
+  animation:drift3 47s ease-in-out infinite;
+}
+.aurora .b4{
+  width:44vw; height:44vw; bottom:-6%; left:-12%;
+  background:radial-gradient(circle, rgba(20,184,166,.50) 0%, rgba(13,148,136,.17) 40%, transparent 70%);
+  animation:drift4 38s ease-in-out infinite;
+}
+.aurora .b5{
+  width:40vw; height:40vw; top:34%; right:-6%;
+  background:radial-gradient(circle, rgba(217,70,239,.42) 0%, rgba(192,38,211,.14) 42%, transparent 70%);
+  animation:drift5 53s ease-in-out infinite;
+}
+@keyframes drift1{
+  0%,100%{ transform:translate3d(0,0,0) scale(1) }
+  33%    { transform:translate3d(14vw,9vh,0) scale(1.16) }
+  66%    { transform:translate3d(5vw,20vh,0) scale(.92) }
+}
+@keyframes drift2{
+  0%,100%{ transform:translate3d(0,0,0) scale(1) }
+  40%    { transform:translate3d(-16vw,14vh,0) scale(1.2) }
+  70%    { transform:translate3d(-6vw,4vh,0) scale(.9) }
+}
+@keyframes drift3{
+  0%,100%{ transform:translate3d(0,0,0) scale(1) }
+  35%    { transform:translate3d(-12vw,-12vh,0) scale(1.12) }
+  75%    { transform:translate3d(10vw,-6vh,0) scale(.94) }
+}
+@keyframes drift4{
+  0%,100%{ transform:translate3d(0,0,0) scale(1) }
+  50%    { transform:translate3d(18vw,-14vh,0) scale(1.22) }
+}
+@keyframes drift5{
+  0%,100%{ transform:translate3d(0,0,0) scale(1) }
+  45%    { transform:translate3d(-12vw,-18vh,0) scale(1.18) }
+  80%    { transform:translate3d(-4vw,8vh,0) scale(.9) }
+}
+
+/* keeps body copy readable over the brighter colour */
+.aurora::after{
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(95% 75% at 50% 45%, rgba(4,7,13,.20) 0%, rgba(4,7,13,.52) 100%);
 }
 
 /* film grain */
@@ -93,9 +164,12 @@ canvas#field{
    ============================================================ */
 .cursor-glow{
   position:fixed; top:0; left:0; z-index:9998;
-  width:340px; height:340px; margin:-170px 0 0 -170px;
+  width:420px; height:420px; margin:-210px 0 0 -210px;
   border-radius:50%; pointer-events:none; opacity:0;
-  background:radial-gradient(circle, rgba(75,144,247,.16) 0%, rgba(75,144,247,.05) 40%, transparent 70%);
+  mix-blend-mode:screen;
+  background:
+    radial-gradient(circle, rgba(56,189,248,.20) 0%, rgba(56,189,248,.07) 32%, transparent 62%),
+    radial-gradient(circle, rgba(167,139,250,.16) 0%, transparent 72%);
   transition:opacity .4s ease;
   will-change:transform;
 }
@@ -314,6 +388,17 @@ section{ position:relative; padding:132px 0; scroll-margin-top:76px; }
   color:var(--ink); background:rgba(18,30,50,.5); backdrop-filter:blur(8px);
 }
 .btn-ghost:hover{ border-color:var(--accent); background:rgba(30,55,95,.55); }
+
+/* icon-only link buttons: the label lives in aria-label / title */
+.btn-icon{
+  width:52px; height:52px; padding:0;
+  justify-content:center; border-radius:13px;
+}
+.btn-icon svg{
+  width:21px; height:21px; display:block;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.btn-icon:hover svg{ transform:scale(1.12); }
 
 .scroll-hint{
   position:absolute; left:50%; bottom:34px; transform:translateX(-50%);
@@ -536,6 +621,58 @@ section{ position:relative; padding:132px 0; scroll-margin-top:76px; }
 @keyframes blink{ 50%{opacity:0} }
 
 /* ============================================================
+   MINI-GAME
+   ============================================================ */
+.game-shell{
+  position:relative; border-radius:var(--r-l); overflow:hidden;
+  height:clamp(380px, 60vh, 540px);
+}
+.game-shell canvas{
+  display:block; width:100%; height:100%;
+  cursor:none; touch-action:none;
+}
+.game-shell:focus{ outline:none; }
+.game-shell:focus-visible{
+  outline:2px solid var(--accent-2); outline-offset:3px;
+}
+.hud{
+  position:absolute; top:0; left:0; right:0; z-index:2; pointer-events:none;
+  display:flex; justify-content:space-between; padding:16px 20px 0;
+}
+.hud .grp{ display:flex; gap:24px; }
+.hud span{
+  font:600 9.5px/1 var(--mono); letter-spacing:.2em;
+  text-transform:uppercase; color:var(--ink-faint);
+}
+.hud b{
+  display:block; margin-top:6px; color:#fff;
+  font:750 20px/1 var(--sans); letter-spacing:-.02em;
+}
+.game-overlay{
+  position:absolute; inset:0; z-index:3;
+  display:grid; place-items:center; text-align:center; padding:24px;
+  background:rgba(4,8,15,.74);
+  backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+  transition:opacity .3s ease;
+}
+.game-overlay.hide{ opacity:0; pointer-events:none; }
+.game-overlay h4{
+  margin:0 0 10px; font-size:clamp(22px,3.4vw,30px);
+  font-weight:800; letter-spacing:-.025em;
+}
+.game-overlay p{ margin:0; color:var(--ink-dim); font-size:14.5px; }
+.game-overlay p b{ color:#fff; font-size:17px; }
+.game-overlay .keyhint{
+  margin-top:16px; font:600 10.5px/1.9 var(--mono);
+  letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint);
+}
+.game-overlay kbd{
+  display:inline-block; padding:3px 7px; margin:0 2px; border-radius:5px;
+  border:1px solid var(--line-strong); background:rgba(20,34,56,.8);
+  font:600 10px/1 var(--mono); color:var(--ink);
+}
+
+/* ============================================================
    CONTACT
    ============================================================ */
 .contact{ text-align:center; padding-bottom:60px; }
@@ -555,7 +692,7 @@ footer{
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-/* the rail needs real gutter space beside .wrap — below this it would sit on the content */
+/* the rail needs real gutter space beside .wrap; below this it would sit on the content */
 @media (max-width:1240px){
   .rail{ display:none; }
 }
@@ -594,6 +731,9 @@ footer{
 </head>
 <body>
 
+<div class="aurora" aria-hidden="true">
+  <b class="b1"></b><b class="b2"></b><b class="b3"></b><b class="b4"></b><b class="b5"></b>
+</div>
 <div class="grain"></div>
 <canvas id="field"></canvas>
 <div class="cursor-glow" id="cGlow"></div>
@@ -607,6 +747,7 @@ footer{
   <a href="#skills"   data-rail="skills"><span class="lbl">Skills</span><span class="tick"></span></a>
   <a href="#projects" data-rail="projects"><span class="lbl">Projects</span><span class="tick"></span></a>
   <a href="#process"  data-rail="process"><span class="lbl">Process</span><span class="tick"></span></a>
+  <a href="#arcade"   data-rail="arcade"><span class="lbl">Game</span><span class="tick"></span></a>
   <a href="#contact"  data-rail="contact"><span class="lbl">Contact</span><span class="tick"></span></a>
 </nav>
 
@@ -617,6 +758,7 @@ footer{
     <a href="#skills"   data-nav="skills">Skills</a>
     <a href="#projects" data-nav="projects">Projects</a>
     <a href="#process"  data-nav="process">Process</a>
+    <a href="#arcade"   data-nav="arcade">Game</a>
     <a href="#contact"  data-nav="contact">Contact</a>
   </nav>
 </header>
@@ -633,7 +775,7 @@ footer{
     </h1>
     <p class="role">Computer Science Graduate · Philadelphia, PA</p>
     <p class="lede">
-      I like figuring out why something is broken and then fixing it — a program that won't run,
+      I like figuring out why something is broken and then fixing it: a program that won't run,
       a <em>query returning the wrong rows</em>, a machine that worked yesterday and doesn't today.
       Most of my hands-on work so far is <em>coursework and personal projects</em>. Here's what
       I've actually built.
@@ -650,7 +792,7 @@ footer{
 <section id="about">
   <div class="wrap">
     <div class="sec-head rv">
-      <div class="sec-num">01 — About</div>
+      <div class="sec-num">01 / About</div>
       <h2 class="sec-title">I want to know <span class="chrome">why it broke</span>.</h2>
     </div>
 
@@ -658,18 +800,25 @@ footer{
       <div class="about-copy rv rv-l" style="--d:80ms">
         <p>
           I graduated with a <strong>Computer Science degree from Commonwealth
-          University–Mansfield</strong>. The part of the work I actually enjoy is the
-          troubleshooting — reproducing the problem, reading the whole error instead of
+          University-Mansfield</strong>. The part of the work I actually enjoy is the
+          troubleshooting. Reproducing the problem, reading the whole error instead of
           skimming it, and changing one thing at a time until something gives.
         </p>
         <p>
           My programming is mostly <strong>coursework and personal projects</strong>: Python,
           Java, C++, C#, and a good amount of SQL. The database work is what stuck. Designing a
           schema that holds up and writing a query that answers a real question is the part I
-          keep going back to — it's what both projects below are built around.
+          keep going back to, and it's what both projects below are built around.
         </p>
         <p>
-          I've also been working customer-facing jobs since 2017 — retail, food service, moving,
+          The hardware side I picked up by doing it. I've built four PCs from parts and kept
+          them running since: picking components that actually work together, cable management,
+          BIOS and driver setup, and the maintenance afterward when a fan starts dying or
+          Windows decides to break itself. Diagnosing your own machine at 1am is good practice
+          for diagnosing someone else's at 9am.
+        </p>
+        <p>
+          I've also been working customer-facing jobs since 2017: retail, food service, moving,
           sales. None of it was software. But it's where I learned to stay steady when someone's
           frustrated and explain a fix in plain language, and for help desk work that turns out
           to count for a lot.
@@ -681,10 +830,10 @@ footer{
       </div>
 
       <div class="stats rv rv-r" style="--d:180ms">
-        <div class="stat panel"><div class="n" data-count="2026" data-suffix="" data-plain="1">0</div><div class="k">CS Graduate<br>Commonwealth–Mansfield</div></div>
+        <div class="stat panel"><div class="n" data-count="2026" data-suffix="" data-plain="1">0</div><div class="k">CS Graduate<br>Commonwealth-Mansfield</div></div>
         <div class="stat panel"><div class="n" data-count="5" data-suffix="">0</div><div class="k">Languages Used<br>In Coursework</div></div>
         <div class="stat panel"><div class="n" data-count="2017" data-suffix="" data-plain="1">0</div><div class="k">Customer-Facing<br>Work Since</div></div>
-        <div class="stat panel"><div class="n" data-count="0"  data-suffix="">0</div><div class="k">Dependencies<br>On This Page</div></div>
+        <div class="stat panel"><div class="n" data-count="4"  data-suffix="">0</div><div class="k">PCs Built<br>And Maintained</div></div>
       </div>
     </div>
   </div>
@@ -694,10 +843,10 @@ footer{
 <section id="play">
   <div class="wrap">
     <div class="sec-head rv">
-      <div class="sec-num">02 — Playground</div>
+      <div class="sec-num">02 / Playground</div>
       <h2 class="sec-title">Move your cursor. <span class="chrome">Click anywhere.</span></h2>
       <p class="sec-sub">
-        A spring-simulated dot matrix — every point tracks its home position, gets displaced by
+        A spring-simulated dot matrix. Every point tracks its home position, gets displaced by
         the cursor, and eases back. Clicking fires a radial impulse through the field.
         No libraries, no canvas framework. Just physics on a 2D context.
       </p>
@@ -715,48 +864,55 @@ footer{
 <section id="skills">
   <div class="wrap">
     <div class="sec-head rv">
-      <div class="sec-num">03 — Capabilities</div>
+      <div class="sec-num">03 / Capabilities</div>
       <h2 class="sec-title">What I actually <span class="chrome">reach for</span>.</h2>
-      <p class="sec-sub">Weighted by what I've shipped with, not what I've read about.</p>
+      <p class="sec-sub">
+        Self-assessed, and I'd rather be honest than impressive.
+        <strong style="color:var(--ink)">Comfortable</strong> means I've built something real with it.
+        <strong style="color:var(--ink)">Familiar</strong> means coursework and smaller projects.
+        <strong style="color:var(--ink)">Learning</strong> means exactly that.
+      </p>
     </div>
 
     <div class="skill-grid">
       <div class="skill-card panel rv" style="--d:0ms">
-        <h3><span class="ico">&lt;/&gt;</span> Languages</h3>
-        <p>Where I write day to day.</p>
-        <div class="meter"><div class="row"><span>Python</span><span>Advanced</span></div><div class="bar"><div class="fill" style="--pct:92%;--d:100ms"></div></div></div>
-        <div class="meter"><div class="row"><span>SQL</span><span>Advanced</span></div><div class="bar"><div class="fill" style="--pct:90%;--d:180ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Java</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:80%;--d:260ms"></div></div></div>
-        <div class="meter"><div class="row"><span>JavaScript</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:76%;--d:340ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Rust</span><span>Working</span></div><div class="bar"><div class="fill" style="--pct:58%;--d:420ms"></div></div></div>
+        <h3><span class="ico">SQL</span> Databases</h3>
+        <p>The part of CS that stuck.</p>
+        <div class="meter"><div class="row"><span>SQL Queries</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:80%;--d:100ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Schema Design</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:76%;--d:180ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Normalization</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:74%;--d:260ms"></div></div></div>
+        <div class="meter"><div class="row"><span>SQLite / MySQL</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:55%;--d:340ms"></div></div></div>
+        <div class="meter"><div class="row"><span>CTEs &amp; Window Functions</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:52%;--d:420ms"></div></div></div>
       </div>
 
       <div class="skill-card panel rv" style="--d:100ms">
-        <h3><span class="ico">DB</span> Data &amp; Storage</h3>
-        <p>Schema design through query tuning.</p>
-        <div class="meter"><div class="row"><span>Relational Modeling</span><span>Advanced</span></div><div class="bar"><div class="fill" style="--pct:91%;--d:140ms"></div></div></div>
-        <div class="meter"><div class="row"><span>MySQL / MariaDB</span><span>Advanced</span></div><div class="bar"><div class="fill" style="--pct:86%;--d:220ms"></div></div></div>
-        <div class="meter"><div class="row"><span>SQL Server / T-SQL</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:78%;--d:300ms"></div></div></div>
-        <div class="meter"><div class="row"><span>PostgreSQL</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:72%;--d:380ms"></div></div></div>
-        <div class="meter"><div class="row"><span>ETL &amp; Warehousing</span><span>Working</span></div><div class="bar"><div class="fill" style="--pct:66%;--d:460ms"></div></div></div>
+        <h3><span class="ico">&lt;/&gt;</span> Programming</h3>
+        <p>Coursework and personal projects.</p>
+        <div class="meter"><div class="row"><span>Python</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:75%;--d:140ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Java</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:55%;--d:220ms"></div></div></div>
+        <div class="meter"><div class="row"><span>C#</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:50%;--d:300ms"></div></div></div>
+        <div class="meter"><div class="row"><span>C++</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:48%;--d:380ms"></div></div></div>
+        <div class="meter"><div class="row"><span>HTML / CSS / JS</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:56%;--d:460ms"></div></div></div>
       </div>
 
       <div class="skill-card panel rv" style="--d:200ms">
-        <h3><span class="ico">AI</span> AI &amp; Vision</h3>
-        <p>Models, pipelines, and the glue between.</p>
-        <div class="meter"><div class="row"><span>LLM Pipelines</span><span>Advanced</span></div><div class="bar"><div class="fill" style="--pct:84%;--d:180ms"></div></div></div>
-        <div class="meter"><div class="row"><span>OpenCV / MediaPipe</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:80%;--d:260ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Prompt &amp; Context Design</span><span>Advanced</span></div><div class="bar"><div class="fill" style="--pct:87%;--d:340ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Vector Search / RAG</span><span>Working</span></div><div class="bar"><div class="fill" style="--pct:64%;--d:420ms"></div></div></div>
+        <h3><span class="ico">IT</span> Support &amp; Systems</h3>
+        <p>What I'm aiming at professionally.</p>
+        <div class="meter"><div class="row"><span>Troubleshooting</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:78%;--d:180ms"></div></div></div>
+        <div class="meter"><div class="row"><span>PC Building &amp; Hardware</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:80%;--d:260ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Windows</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:76%;--d:340ms"></div></div></div>
+        <div class="meter"><div class="row"><span>macOS</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:72%;--d:420ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Networking Fundamentals</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:52%;--d:500ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Ticketing &amp; CRM Systems</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:58%;--d:580ms"></div></div></div>
       </div>
 
       <div class="skill-card panel rv" style="--d:300ms">
-        <h3><span class="ico">⌘</span> Tooling</h3>
-        <p>The environment around the code.</p>
-        <div class="meter"><div class="row"><span>Git &amp; Version Control</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:82%;--d:200ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Unix / Shell</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:77%;--d:280ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Debugging &amp; Profiling</span><span>Proficient</span></div><div class="bar"><div class="fill" style="--pct:79%;--d:360ms"></div></div></div>
-        <div class="meter"><div class="row"><span>Testing &amp; CI</span><span>Working</span></div><div class="bar"><div class="fill" style="--pct:62%;--d:440ms"></div></div></div>
+        <h3><span class="ico">↔</span> The Other Half</h3>
+        <p>Nine years of customer-facing work taught me this part.</p>
+        <div class="meter"><div class="row"><span>Explaining Fixes in Plain English</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:82%;--d:200ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Staying Calm With Frustrated People</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:80%;--d:280ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Documenting What I Did</span><span>Comfortable</span></div><div class="bar"><div class="fill" style="--pct:72%;--d:360ms"></div></div></div>
+        <div class="meter"><div class="row"><span>Git &amp; Version Control</span><span>Familiar</span></div><div class="bar"><div class="fill" style="--pct:50%;--d:440ms"></div></div></div>
       </div>
     </div>
 
@@ -770,9 +926,12 @@ footer{
 <section id="projects">
   <div class="wrap">
     <div class="sec-head rv">
-      <div class="sec-num">04 — Selected Work</div>
+      <div class="sec-num">04 / Selected Work</div>
       <h2 class="sec-title">Things I've <span class="chrome">built</span>.</h2>
-      <p class="sec-sub">Hover a card — it tracks your cursor in 3D. Each one is a real project, not a template.</p>
+      <p class="sec-sub">
+        Personal and coursework projects. No professional software experience yet.
+        Hover a card and it tracks your cursor in 3D.
+      </p>
     </div>
 
     <div class="proj-grid">
@@ -783,89 +942,63 @@ footer{
         <div class="proj-top">
           <div>
             <div class="idx" style="margin-bottom:10px">FEATURED / 00</div>
-            <h3>AI Pipeline <span class="chrome">— coming soon</span></h3>
+            <h3>AI Pipeline <span class="chrome">(coming soon)</span></h3>
           </div>
           <span class="status wip">In Progress</span>
         </div>
         <p>
-          This slot is reserved for the AI pipeline project. Drop the write-up here when it's
-          ready — what it ingests, how it's orchestrated, what the model does on the other end,
-          and the numbers that make it interesting. The layout will hold whatever you give it.
+          Reserved for the AI pipeline project I'm currently working on. Once it's far enough
+          along, the write-up goes here: what it takes in, how it's put together, and what it
+          does on the other end. Not finished yet, so I'm not going to pretend otherwise.
         </p>
         <div class="tags">
-          <span class="tag">Python</span><span class="tag">LLM Orchestration</span>
-          <span class="tag">Data Ingest</span><span class="tag">TBD</span>
+          <span class="tag">Python</span><span class="tag">In Progress</span>
         </div>
       </article>
 
       <article class="proj panel rv tilt" style="--d:80ms">
         <span class="spot"></span>
         <div class="proj-top">
-          <div><div class="idx" style="margin-bottom:10px">01</div><h3>Hand Gesture Recognition</h3></div>
-          <span class="status live">Working</span>
+          <div><div class="idx" style="margin-bottom:10px">01</div><h3>Inventory Management System</h3></div>
+          <span class="status live">Complete</span>
         </div>
         <p>
-          Real-time hand tracking and gesture classification built on MediaPipe and OpenCV.
-          Landmark extraction feeds a lightweight classifier, so gestures resolve live from a
-          standard webcam with no GPU in the loop.
+          A SQL project modeling inventory for a multi-warehouse retail operation, with seven tables
+          covering products, suppliers, warehouses, purchase orders, and stock movements. The
+          part I'm happiest with: current stock isn't stored as a column, it's derived from a
+          ledger of every transaction, so the numbers can't drift out of sync. Seventeen queries
+          on top of it, using joins, CTEs, and window functions.
         </p>
-        <div class="tags"><span class="tag">Python</span><span class="tag">MediaPipe</span><span class="tag">OpenCV</span><span class="tag">Computer Vision</span></div>
+        <div class="tags"><span class="tag">SQL</span><span class="tag">Schema Design</span><span class="tag">Window Functions</span><span class="tag">Python</span></div>
       </article>
 
       <article class="proj panel rv tilt" style="--d:140ms">
         <span class="spot"></span>
         <div class="proj-top">
-          <div><div class="idx" style="margin-bottom:10px">02</div><h3>Inventory Management System</h3></div>
-          <span class="status live">Working</span>
+          <div><div class="idx" style="margin-bottom:10px">02</div><h3>Cat Adoption Finder</h3></div>
+          <span class="status live">Complete</span>
         </div>
         <p>
-          A normalized relational backend for tracking stock, suppliers, and order history —
-          schema design through to the reporting queries. Built to survive real constraints:
-          referential integrity, transactional writes, and joins that stay fast as rows pile up.
+          A Flask web app for searching adoptable cats by name, breed, size, and maximum age.
+          Data gets seeded from a spreadsheet into SQLite, and the search endpoint builds the
+          query from whichever filters you actually used instead of running one rigid query
+          every time.
         </p>
-        <div class="tags"><span class="tag">SQL</span><span class="tag">MySQL</span><span class="tag">Schema Design</span><span class="tag">Normalization</span></div>
+        <div class="tags"><span class="tag">Python</span><span class="tag">Flask</span><span class="tag">SQLite</span><span class="tag">HTML/CSS</span></div>
       </article>
 
       <article class="proj panel rv tilt" style="--d:200ms">
         <span class="spot"></span>
         <div class="proj-top">
-          <div><div class="idx" style="margin-bottom:10px">03</div><h3>Cat Adoption Finder</h3></div>
-          <span class="status live">Working</span>
+          <div><div class="idx" style="margin-bottom:10px">03</div><h3>This Page</h3></div>
+          <span class="status live">You're On It</span>
         </div>
         <p>
-          A search-and-match web app for adoptable cats — filtering, result ranking, and a
-          front end that stays readable on a phone. An exercise in taking an external data
-          source and making it genuinely browsable.
+          One HTML file, no libraries, no build step. The background constellation and the dot
+          grid above are both canvas simulations that respond to your cursor, and everything
+          reacts to scroll position. Mostly I built it to see whether I could.
         </p>
-        <div class="tags"><span class="tag">JavaScript</span><span class="tag">HTML/CSS</span><span class="tag">REST API</span></div>
-      </article>
-
-      <article class="proj panel rv tilt" style="--d:260ms">
-        <span class="spot"></span>
-        <div class="proj-top">
-          <div><div class="idx" style="margin-bottom:10px">04</div><h3>Chess Engine</h3></div>
-          <span class="status arch">Personal</span>
-        </div>
-        <p>
-          Full move generation, legality checking, and board state management written from
-          scratch in Python. Castling, en passant, and promotion all handled — the edge cases
-          are the entire point of writing one of these.
-        </p>
-        <div class="tags"><span class="tag">Python</span><span class="tag">Algorithms</span><span class="tag">Game Logic</span></div>
-      </article>
-
-      <article class="proj panel rv tilt" style="--d:320ms">
-        <span class="spot"></span>
-        <div class="proj-top">
-          <div><div class="idx" style="margin-bottom:10px">05</div><h3>Rust Experiments</h3></div>
-          <span class="status wip">Ongoing</span>
-        </div>
-        <p>
-          An ongoing dig into ownership, borrowing, and zero-cost abstractions. Small,
-          deliberate programs written to understand what the borrow checker is protecting me
-          from rather than to fight it.
-        </p>
-        <div class="tags"><span class="tag">Rust</span><span class="tag">Cargo</span><span class="tag">Systems</span></div>
+        <div class="tags"><span class="tag">JavaScript</span><span class="tag">Canvas API</span><span class="tag">CSS</span><span class="tag">0 Dependencies</span></div>
       </article>
 
       <!-- open slot -->
@@ -874,7 +1007,7 @@ footer{
         <h3>Next project</h3>
         <p style="margin-top:10px">
           Room to grow. Copy any <code style="font-family:var(--mono);color:var(--accent-2)">&lt;article class="proj"&gt;</code>
-          block above and edit the text — the grid, reveal animation, and tilt all apply automatically.
+          block above and edit the text; the grid, reveal animation, and tilt all apply automatically.
         </p>
       </article>
 
@@ -886,7 +1019,7 @@ footer{
 <section id="process">
   <div class="wrap">
     <div class="sec-head rv">
-      <div class="sec-num">05 — Process</div>
+      <div class="sec-num">05 / Process</div>
       <h2 class="sec-title">How I <span class="chrome">work</span>.</h2>
       <p class="sec-sub">Scroll into this one and it runs itself.</p>
     </div>
@@ -894,9 +1027,54 @@ footer{
     <div class="term panel rv" id="term">
       <div class="term-bar">
         <i></i><i></i><i></i>
-        <span class="path">braydon@dev — ~/projects — zsh</span>
+        <span class="path">braydon@dev · ~ · zsh</span>
       </div>
       <div class="term-body" id="termBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ MINI-GAME ══════════════════ -->
+<section id="arcade">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-num">06 / Break Time</div>
+      <h2 class="sec-title">You scrolled this far. <span class="chrome">Have a game.</span></h2>
+      <p class="sec-sub">
+        Breakout, written from scratch on a 2D canvas. Collision detection, paddle-angle physics,
+        and the level logic are all in the same file as everything else. Your best score is saved
+        in this browser.
+      </p>
+    </div>
+
+    <div class="game-shell panel rv rv-s" id="gameShell"
+         tabindex="0" role="application" aria-label="Breakout game. Click to focus, then use arrow keys to move and space to launch.">
+      <div class="hud">
+        <div class="grp">
+          <div><span>Score</span><b id="gScore">0</b></div>
+          <div><span>Best</span><b id="gBest">0</b></div>
+        </div>
+        <div class="grp">
+          <div><span>Level</span><b id="gLevel">1</b></div>
+          <div><span>Lives</span><b id="gLives">3</b></div>
+        </div>
+      </div>
+      <canvas id="brkCanvas"></canvas>
+      <div class="game-overlay" id="gOverlay">
+        <div>
+          <h4 id="gTitle">Break the blocks</h4>
+          <p id="gText">Click anywhere in here to start.</p>
+          <p class="keyhint">
+            <kbd>Mouse</kbd> or <kbd>←</kbd><kbd>→</kbd> to move ·
+            <kbd>Click</kbd> / <kbd>Space</kbd> to launch ·
+            <kbd>P</kbd> to pause
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rv" style="margin-top:26px; text-align:center; --d:120ms">
+      <a class="btn btn-primary mag" href="games.html">More games here →</a>
     </div>
   </div>
 </section>
@@ -904,21 +1082,27 @@ footer{
 <!-- ══════════════════ CONTACT ══════════════════ -->
 <section id="contact" class="contact">
   <div class="wrap">
-    <div class="sec-num rv" style="justify-content:center">06 — Contact</div>
-    <h2 class="rv"><span class="chrome">Let's build something.</span></h2>
+    <div class="sec-num rv" style="justify-content:center">07 / Contact</div>
+    <h2 class="rv"><span class="chrome">Let's talk.</span></h2>
     <p class="rv" style="--d:100ms">
-      I'm looking for software engineering work where the data is messy and the problem is real.
-      If that's what you've got, I'd like to hear about it.
+      I'm looking for IT support and help desk work in the Philadelphia area, on-site, hybrid,
+      or remote. If you've got something open, I'd like to hear about it.
     </p>
     <div class="links rv" style="--d:180ms">
       <a class="btn btn-primary mag" href="mailto:braydonglass22@gmail.com">braydonglass22@gmail.com</a>
-      <a class="btn btn-ghost mag" href="#" data-edit="github">GitHub ↗</a>
-      <a class="btn btn-ghost mag" href="#" data-edit="linkedin">LinkedIn ↗</a>
+      <a class="btn btn-ghost btn-icon mag" href="https://www.linkedin.com/in/braydonglass"
+         target="_blank" rel="noopener" title="LinkedIn" aria-label="LinkedIn profile">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+      </a>
+      <a class="btn btn-ghost btn-icon mag" href="https://github.com/braydonglass"
+         target="_blank" rel="noopener" title="GitHub" aria-label="GitHub profile">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58l-.01-2.04c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22l-.01 3.29c0 .32.21.7.82.58A12 12 0 0 0 12 .3z"/></svg>
+      </a>
     </div>
 
     <footer class="wrap" style="margin-top:80px">
-      <span>© <span id="yr">2026</span> Braydon Glass</span>
-      <span>Hand-built · single file · zero dependencies</span>
+      <span>© <span id="yr">2026</span> Braydon Glass · Philadelphia, PA</span>
+      <span>Built by hand · single file · zero dependencies</span>
     </footer>
   </div>
 </section>
@@ -956,45 +1140,72 @@ const lerp    = (a,b,t) => a + (b-a)*t;
   }
 
   function seed(){
-    const n = clamp(Math.round((W * H) / 17000), 26, 110);
+    const n = clamp(Math.round((W * H) / 15000), 30, 130);
     parts = Array.from({ length:n }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      vx: (Math.random() - .5) * .28,
+      vx: (Math.random() - .5) * .28,      // ambient drift
       vy: (Math.random() - .5) * .28,
-      r: Math.random() * 1.5 + .7
+      ix: 0, iy: 0,                        // impulse velocity from cursor / shockwaves
+      r: Math.random() * 1.5 + .7,
+      h: 185 + Math.random() * 100         // cyan through violet
     }));
   }
 
-  const LINK = 132, PUSH = 165;
+  const LINK = 138, REACH = 230;
+  const trail  = [];                       // recent pointer positions
+  const shocks = [];                       // click shockwaves
 
   function frame(){
     ctx.clearRect(0, 0, W, H);
 
-    const sp = parseFloat(getComputedStyle(root).getPropertyValue("--sp")) || 0;
-    const drift = 1 + sp * 1.5;              // field speeds up as you descend
-    const tint  = 150 + sp * 55;             // and cools toward brighter blue
+    const sp    = parseFloat(getComputedStyle(root).getPropertyValue("--sp")) || 0;
+    const drift = 1 + sp * 1.4;            // field speeds up as you descend
+    const hueSh = sp * 55;                 // and shifts colour with scroll
+
+    for (let i = shocks.length - 1; i >= 0; i--){
+      shocks[i].r += 13;
+      shocks[i].life -= .016;
+      if (shocks[i].life <= 0) shocks.splice(i, 1);
+    }
 
     for (const p of parts){
-      p.x += p.vx * drift;
-      p.y += p.vy * drift;
+      if (ptr.has){
+        const dx = p.x - ptr.x, dy = p.y - ptr.y;
+        const d  = Math.hypot(dx, dy);
+        if (d < REACH && d > .01){
+          const f  = 1 - d / REACH;
+          const ux = dx / d, uy = dy / d;
+          // shove away up close, draw in gently at range: makes a standing vortex
+          const radial = d < 78 ? f * 1.5 : -f * .22;
+          p.ix += ux * radial;
+          p.iy += uy * radial;
+          // the tangential term is what makes it swirl instead of just scatter
+          p.ix += -uy * f * .58;
+          p.iy +=  ux * f * .58;
+        }
+      }
+
+      for (const s of shocks){
+        const dx = p.x - s.x, dy = p.y - s.y;
+        const d  = Math.hypot(dx, dy);
+        const band = Math.abs(d - s.r);
+        if (band < 90 && d > .01){
+          const f = (1 - band / 90) * s.life * 4.2;
+          p.ix += (dx / d) * f;
+          p.iy += (dy / d) * f;
+        }
+      }
+
+      p.ix *= .93; p.iy *= .93;            // impulses bleed off, ambient drift survives
+      p.x += p.vx * drift + p.ix;
+      p.y += p.vy * drift + p.iy;
 
       if (p.x < -20) p.x = W + 20; else if (p.x > W + 20) p.x = -20;
       if (p.y < -20) p.y = H + 20; else if (p.y > H + 20) p.y = -20;
-
-      if (ptr.has){
-        const dx = p.x - ptr.x, dy = p.y - ptr.y;
-        const d2 = dx*dx + dy*dy;
-        if (d2 < PUSH*PUSH && d2 > 1){
-          const d = Math.sqrt(d2);
-          const f = (1 - d / PUSH) * 1.5;
-          p.x += (dx / d) * f;
-          p.y += (dy / d) * f;
-        }
-      }
     }
 
-    // particle-to-particle links
+    // particle-to-particle links, coloured by the pair's blended hue
     for (let i = 0; i < parts.length; i++){
       const a = parts[i];
       for (let j = i + 1; j < parts.length; j++){
@@ -1002,9 +1213,9 @@ const lerp    = (a,b,t) => a + (b-a)*t;
         const dx = a.x - b.x, dy = a.y - b.y;
         const d2 = dx*dx + dy*dy;
         if (d2 < LINK*LINK){
-          const al = (1 - Math.sqrt(d2) / LINK) * .3;
-          ctx.strokeStyle = `rgba(110,${tint},235,${al})`;
-          ctx.lineWidth = .7;
+          const al = (1 - Math.sqrt(d2) / LINK) * .34;
+          ctx.strokeStyle = `hsla(${(a.h + b.h) / 2 + hueSh}, 88%, 66%, ${al})`;
+          ctx.lineWidth = .75;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
           ctx.stroke();
@@ -1012,15 +1223,14 @@ const lerp    = (a,b,t) => a + (b-a)*t;
       }
     }
 
-    // cursor links — the part that clearly answers the mouse
+    // cursor links: the part that clearly answers the mouse
     if (ptr.has){
       for (const p of parts){
-        const dx = p.x - ptr.x, dy = p.y - ptr.y;
-        const d = Math.hypot(dx, dy);
-        if (d < 210){
-          const al = (1 - d / 210) * .55;
-          ctx.strokeStyle = `rgba(180,215,255,${al})`;
-          ctx.lineWidth = .9;
+        const d = Math.hypot(p.x - ptr.x, p.y - ptr.y);
+        if (d < REACH){
+          const al = (1 - d / REACH) * .6;
+          ctx.strokeStyle = `hsla(${p.h + hueSh}, 95%, 76%, ${al})`;
+          ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y); ctx.lineTo(ptr.x, ptr.y);
           ctx.stroke();
@@ -1028,22 +1238,83 @@ const lerp    = (a,b,t) => a + (b-a)*t;
       }
     }
 
+    // expanding rings from clicks
+    for (const s of shocks){
+      ctx.strokeStyle = `hsla(${200 + hueSh}, 95%, 74%, ${s.life * .5})`;
+      ctx.lineWidth = 2 * s.life;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // pointer trail
+    ctx.lineCap = "round";
+    for (let i = 1; i < trail.length; i++){
+      const t = i / trail.length;
+      ctx.strokeStyle = `hsla(${190 + t * 70 + hueSh}, 95%, 72%, ${t * .5})`;
+      ctx.lineWidth = t * 2.4;
+      ctx.beginPath();
+      ctx.moveTo(trail[i-1].x, trail[i-1].y);
+      ctx.lineTo(trail[i].x, trail[i].y);
+      ctx.stroke();
+    }
+
     // dots
     for (const p of parts){
-      const d = ptr.has ? Math.hypot(p.x - ptr.x, p.y - ptr.y) : 9999;
-      const hot = d < 210 ? 1 - d / 210 : 0;
-      ctx.fillStyle = `rgba(${lerp(120,225,hot)|0},${lerp(165,240,hot)|0},255,${lerp(.42,.95,hot)})`;
+      const d   = ptr.has ? Math.hypot(p.x - ptr.x, p.y - ptr.y) : 9999;
+      const hot = d < REACH ? 1 - d / REACH : 0;
+      ctx.fillStyle = `hsla(${p.h + hueSh}, ${lerp(80,100,hot)}%, ${lerp(62,88,hot)}%, ${lerp(.45,1,hot)})`;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r + hot * 1.5, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, p.r + hot * 2.1, 0, Math.PI * 2);
       ctx.fill();
+      if (hot > .55){                      // halo on the closest ones
+        ctx.fillStyle = `hsla(${p.h + hueSh}, 100%, 78%, ${(hot - .55) * .32})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (p.r + 2.1) * 3.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     if (!REDUCED) requestAnimationFrame(frame);
   }
 
   addEventListener("resize", size, { passive:true });
-  addEventListener("pointermove", e => { ptr.x = e.clientX; ptr.y = e.clientY; ptr.has = true; }, { passive:true });
-  addEventListener("pointerleave", () => { ptr.has = false; }, { passive:true });
+
+  // aurora parallax, written once per frame rather than once per event
+  let axTarget = 0, ayTarget = 0, ax = 0, ay = 0, parallaxQueued = false;
+  function applyParallax(){
+    parallaxQueued = false;
+    ax = lerp(ax, axTarget, .08);
+    ay = lerp(ay, ayTarget, .08);
+    root.style.setProperty("--ax", ax.toFixed(3));
+    root.style.setProperty("--ay", ay.toFixed(3));
+    if (Math.abs(ax - axTarget) > .002 || Math.abs(ay - ayTarget) > .002) queueParallax();
+  }
+  function queueParallax(){
+    if (!parallaxQueued){ parallaxQueued = true; requestAnimationFrame(applyParallax); }
+  }
+
+  addEventListener("pointermove", e => {
+    ptr.x = e.clientX; ptr.y = e.clientY; ptr.has = true;
+    trail.push({ x:e.clientX, y:e.clientY });
+    if (trail.length > 16) trail.shift();
+    if (!REDUCED){
+      axTarget = (e.clientX / innerWidth  - .5) * 2;
+      ayTarget = (e.clientY / innerHeight - .5) * 2;
+      queueParallax();
+    }
+  }, { passive:true });
+
+  addEventListener("pointerleave", () => { ptr.has = false; trail.length = 0; }, { passive:true });
+
+  // clicking anywhere on the page sends a wave through the field
+  addEventListener("pointerdown", e => {
+    shocks.push({ x:e.clientX, y:e.clientY, r:0, life:1 });
+    if (shocks.length > 5) shocks.shift();
+  }, { passive:true });
+
+  // let the trail decay when the pointer stops moving
+  if (!REDUCED) setInterval(() => { if (trail.length) trail.shift(); }, 55);
 
   size();
   frame();   // under reduced-motion this renders a single static constellation
@@ -1241,7 +1512,8 @@ const lerp    = (a,b,t) => a + (b-a)*t;
     el.dataset.done = "1";
     const target = parseFloat(el.dataset.count) || 0;
     const suffix = el.dataset.suffix || "";
-    if (REDUCED){ el.textContent = target + suffix; return; }
+    // years shouldn't tick up from zero like a tally
+    if (REDUCED || el.dataset.plain){ el.textContent = target + suffix; return; }
     const dur = 1500, t0 = performance.now();
     (function step(now){
       const p = clamp((now - t0) / dur, 0, 1);
@@ -1337,23 +1609,24 @@ if (FINE && !REDUCED){
   if (!body || !term) return;
 
   const script = [
-    { t:"p", s:"braydon@dev ~/projects % " },
-    { t:"c", s:"cat process.md\n", speed:34 },
-    { t:"o", s:"\n1. Understand the data before writing a line of code.\n", speed:11 },
-    { t:"o", s:"   Shape, volume, and the edge cases nobody mentioned.\n", speed:9 },
-    { t:"o", s:"\n2. Model it properly. A clean schema deletes whole classes of bugs.\n", speed:11 },
-    { t:"o", s:"\n3. Build the smallest version that actually runs end to end.\n", speed:11 },
-    { t:"o", s:"\n4. Then make it fast — measured, not guessed.\n", speed:11 },
-    { t:"o", s:"\n5. Leave it readable. Someone maintains this next. Often me.\n", speed:11 },
-    { t:"p", s:"\n\nbraydon@dev ~/projects % " },
-    { t:"c", s:"./build --target portfolio\n", speed:34 },
-    { t:"a", s:"\n  ▸ compiling sections .......... 6/6\n", speed:14 },
-    { t:"a", s:"  ▸ wiring interactions ........ ok\n", speed:14 },
-    { t:"a", s:"  ▸ dependencies ............... 0\n", speed:14 },
-    { t:"o", s:"\n  build finished in " },
-    { t:"w", s:"0.00s", speed:60 },
-    { t:"o", s:" — it's one file.\n" },
-    { t:"p", s:"\nbraydon@dev ~/projects % " }
+    { t:"p", s:"braydon@dev ~ % " },
+    { t:"c", s:"cat how-i-troubleshoot.txt\n", speed:34 },
+    { t:"o", s:"\n1. Reproduce it first.\n", speed:11 },
+    { t:"o", s:"   A problem I can't trigger isn't one I can confirm I fixed.\n", speed:9 },
+    { t:"o", s:"\n2. Read the whole error, not just the last line.\n", speed:11 },
+    { t:"o", s:"\n3. Change one thing at a time.\n", speed:11 },
+    { t:"o", s:"   Change three and I've learned nothing from the result.\n", speed:9 },
+    { t:"o", s:"\n4. Write down what actually fixed it.\n", speed:11 },
+    { t:"o", s:"   So the next person isn't starting from zero. Usually that's me.\n", speed:9 },
+    { t:"o", s:"\n5. Explain it in plain language.\n", speed:11 },
+    { t:"o", s:"   \"It's working now\" is not an explanation.\n", speed:9 },
+    { t:"p", s:"\n\nbraydon@dev ~ % " },
+    { t:"c", s:"whoami\n", speed:38 },
+    { t:"a", s:"\n  Braydon Glass\n", speed:16 },
+    { t:"a", s:"  CS graduate, Commonwealth University-Mansfield\n", speed:14 },
+    { t:"a", s:"  Philadelphia, PA\n", speed:14 },
+    { t:"w", s:"\n  status: looking for IT support work\n", speed:16 },
+    { t:"p", s:"\nbraydon@dev ~ % " }
   ];
 
   const CLS = { p:"c-p", c:"c-c", o:"c-o", a:"c-a", w:"c-w" };
@@ -1404,22 +1677,327 @@ if (FINE && !REDUCED){
 })();
 
 /* ============================================================
-   8 · TECH MARQUEE
+   8 · BREAKOUT MINI-GAME
+   ============================================================ */
+(() => {
+  const shell = document.getElementById("gameShell");
+  const cv    = document.getElementById("brkCanvas");
+  if (!shell || !cv) return;
+  const ctx = cv.getContext("2d");
+
+  const elScore = document.getElementById("gScore");
+  const elBest  = document.getElementById("gBest");
+  const elLives = document.getElementById("gLives");
+  const elLevel = document.getElementById("gLevel");
+  const ov      = document.getElementById("gOverlay");
+  const ovTitle = document.getElementById("gTitle");
+  const ovText  = document.getElementById("gText");
+
+  const STORE = "bg_breakout_best";
+  const HUES  = [188, 205, 226, 262, 292, 172, 210];
+
+  let W = 0, H = 0, dpr = 1, running = false, raf = null;
+  let best = 0;
+  try { best = parseInt(localStorage.getItem(STORE), 10) || 0; } catch (e) { /* file:// or blocked */ }
+
+  const S      = { mode:"idle", score:0, lives:3, level:1 };
+  const paddle = { x:0, y:0, w:110, h:12 };
+  const ball   = { x:0, y:0, vx:0, vy:0, r:7, stuck:true };
+  const keys   = { left:false, right:false };
+  let bricks = [], bits = [];
+
+  function size(){
+    const r = shell.getBoundingClientRect();
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    cv.width  = Math.floor(W * dpr);
+    cv.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    paddle.w = clamp(W * .17, 76, 152);
+    paddle.y = H - 34;
+    paddle.x = clamp(paddle.x || (W - paddle.w) / 2, 0, W - paddle.w);
+    buildLevel();
+    resetBall();
+  }
+
+  function buildLevel(){
+    bricks = [];
+    const pad  = 18;
+    const cols = clamp(Math.floor(W / 82), 5, 11);
+    const rows = Math.min(3 + S.level, 7);
+    const gap  = 7;
+    const bw   = (W - pad * 2 - gap * (cols - 1)) / cols;
+    const bh   = 20;
+    const top  = 66;
+    for (let r = 0; r < rows; r++){
+      for (let c = 0; c < cols; c++){
+        bricks.push({
+          x: pad + c * (bw + gap), y: top + r * (bh + gap),
+          w: bw, h: bh, alive: true,
+          hue: HUES[r % HUES.length],
+          pts: (rows - r) * 10
+        });
+      }
+    }
+  }
+
+  function resetBall(){
+    ball.stuck = true;
+    ball.x = paddle.x + paddle.w / 2;
+    ball.y = paddle.y - ball.r - 2;
+    ball.vx = ball.vy = 0;
+  }
+
+  function launch(){
+    if (!ball.stuck) return;
+    ball.stuck = false;
+    const sp = 5.2 + S.level * .42;
+    const a  = -Math.PI / 2 + (Math.random() - .5) * .7;
+    ball.vx = Math.cos(a) * sp;
+    ball.vy = Math.sin(a) * sp;
+  }
+
+  function syncHUD(){
+    elScore.textContent = S.score;
+    elLives.textContent = S.lives;
+    elLevel.textContent = S.level;
+    if (S.score > best){
+      best = S.score;
+      try { localStorage.setItem(STORE, String(best)); } catch (e) {}
+    }
+    elBest.textContent = best;
+  }
+
+  function setMode(m, title, text){
+    S.mode = m;
+    if (m === "playing"){ ov.classList.add("hide"); return; }
+    ov.classList.remove("hide");
+    if (title) ovTitle.textContent = title;
+    if (text)  ovText.innerHTML = text;
+  }
+
+  function newGame(){
+    S.score = 0; S.lives = 3; S.level = 1;
+    paddle.x = (W - paddle.w) / 2;
+    buildLevel(); resetBall(); syncHUD();
+    setMode("playing");
+  }
+
+  function burst(b){
+    for (let i = 0; i < 9; i++){
+      bits.push({
+        x: b.x + Math.random() * b.w,
+        y: b.y + Math.random() * b.h,
+        vx: (Math.random() - .5) * 3.4,
+        vy: (Math.random() - .5) * 3.4 - 1,
+        s: Math.random() * 2.6 + 1.4,
+        hue: b.hue, life: 1
+      });
+    }
+  }
+
+  function update(){
+    if (keys.left)  paddle.x -= 9;
+    if (keys.right) paddle.x += 9;
+    paddle.x = clamp(paddle.x, 0, W - paddle.w);
+
+    if (ball.stuck){
+      ball.x = paddle.x + paddle.w / 2;
+      ball.y = paddle.y - ball.r - 2;
+    } else {
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // walls
+      if (ball.x - ball.r < 0){ ball.x = ball.r; ball.vx *= -1; }
+      else if (ball.x + ball.r > W){ ball.x = W - ball.r; ball.vx *= -1; }
+      if (ball.y - ball.r < 0){ ball.y = ball.r; ball.vy *= -1; }
+
+      // paddle: horizontal hit position sets the rebound angle
+      if (ball.vy > 0 &&
+          ball.y + ball.r >= paddle.y && ball.y - ball.r <= paddle.y + paddle.h &&
+          ball.x >= paddle.x - ball.r && ball.x <= paddle.x + paddle.w + ball.r){
+        const hit = clamp((ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2), -1, 1);
+        const sp  = Math.hypot(ball.vx, ball.vy);
+        const a   = hit * (Math.PI / 3);
+        ball.vx = Math.sin(a) * sp;
+        ball.vy = -Math.abs(Math.cos(a) * sp);
+        ball.y  = paddle.y - ball.r - .5;
+      }
+
+      // bricks: one per frame keeps the bounce predictable
+      for (const b of bricks){
+        if (!b.alive) continue;
+        if (ball.x + ball.r < b.x || ball.x - ball.r > b.x + b.w ||
+            ball.y + ball.r < b.y || ball.y - ball.r > b.y + b.h) continue;
+        b.alive = false;
+        S.score += b.pts;
+        burst(b);
+        // bounce off whichever axis is least penetrated
+        const nx = clamp(ball.x, b.x, b.x + b.w);
+        const ny = clamp(ball.y, b.y, b.y + b.h);
+        if (Math.abs(ball.x - nx) > Math.abs(ball.y - ny)) ball.vx *= -1;
+        else ball.vy *= -1;
+        syncHUD();
+        break;
+      }
+
+      // never let it settle into a flat horizontal path
+      if (Math.abs(ball.vy) < 1.4) ball.vy = ball.vy < 0 ? -1.4 : 1.4;
+
+      if (ball.y - ball.r > H){
+        S.lives--;
+        syncHUD();
+        if (S.lives <= 0){
+          setMode("over", "Game over", `You scored <b>${S.score}</b>. Click to play again.`);
+        } else {
+          resetBall();
+        }
+      }
+
+      if (bricks.length && bricks.every(b => !b.alive)){
+        S.level++;
+        buildLevel(); resetBall(); syncHUD();
+        setMode("cleared", "Level cleared", `Level <b>${S.level}</b> next. Click to continue.`);
+      }
+    }
+
+    for (let i = bits.length - 1; i >= 0; i--){
+      const p = bits[i];
+      p.x += p.vx; p.y += p.vy; p.vy += .16; p.life -= .026;
+      if (p.life <= 0) bits.splice(i, 1);
+    }
+  }
+
+  function rrect(x, y, w, h, r){
+    ctx.beginPath();
+    if (ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+
+    for (const b of bricks){
+      if (!b.alive) continue;
+      const g = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+      g.addColorStop(0, `hsla(${b.hue},92%,71%,.95)`);
+      g.addColorStop(1, `hsla(${b.hue},86%,50%,.88)`);
+      ctx.fillStyle = g;
+      rrect(b.x, b.y, b.w, b.h, 5); ctx.fill();
+      ctx.strokeStyle = `hsla(${b.hue},100%,88%,.45)`;
+      ctx.lineWidth = 1;
+      rrect(b.x + .5, b.y + .5, b.w - 1, b.h - 1, 5); ctx.stroke();
+    }
+
+    for (const p of bits){
+      ctx.fillStyle = `hsla(${p.hue},95%,74%,${p.life})`;
+      ctx.fillRect(p.x, p.y, p.s, p.s);
+    }
+
+    // chrome paddle, matching the page
+    const pg = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.h);
+    pg.addColorStop(0, "#ffffff");
+    pg.addColorStop(.5, "#bccbdd");
+    pg.addColorStop(1, "#7f92aa");
+    ctx.fillStyle = pg;
+    rrect(paddle.x, paddle.y, paddle.w, paddle.h, 6); ctx.fill();
+
+    ctx.fillStyle = "#eaf3ff";
+    ctx.shadowColor = "rgba(120,180,255,.9)";
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function loop(){
+    if (S.mode === "playing") update();
+    draw();
+    if (running) raf = requestAnimationFrame(loop);
+  }
+
+  function poke(){
+    if (S.mode === "playing") launch();
+    else if (S.mode === "cleared" || S.mode === "paused") setMode("playing");
+    else newGame();                        // idle or over
+  }
+
+  shell.addEventListener("pointerdown", () => {
+    shell.focus({ preventScroll:true });   // keyboard control is focus-gated
+    poke();
+  });
+
+  cv.addEventListener("pointermove", e => {
+    const r = cv.getBoundingClientRect();
+    paddle.x = clamp(e.clientX - r.left - paddle.w / 2, 0, W - paddle.w);
+  }, { passive:true });
+
+  addEventListener("keydown", e => {
+    // only claim keys when the game itself is focused, so Space still scrolls the page
+    if (!running || !shell.contains(document.activeElement)) return;
+    const k = e.key;
+    // only swallow the arrows while a game is actually in progress
+    if (S.mode === "playing" && (k === "ArrowLeft" || k === "ArrowRight")){
+      if (k === "ArrowLeft") keys.left = true; else keys.right = true;
+      e.preventDefault();
+      return;
+    }
+    if (k === " " || k === "Spacebar"){ poke(); e.preventDefault(); return; }
+    if (k === "p" || k === "P"){
+      if (S.mode === "playing") setMode("paused", "Paused", "Click or press P to resume.");
+      else if (S.mode === "paused") setMode("playing");
+    }
+  });
+
+  addEventListener("keyup", e => {
+    if (e.key === "ArrowLeft")  keys.left  = false;
+    if (e.key === "ArrowRight") keys.right = false;
+  });
+
+  addEventListener("resize", size, { passive:true });
+
+  // run only while on screen, and pause a live game when it scrolls away
+  new IntersectionObserver(es => {
+    es.forEach(en => {
+      if (en.isIntersecting){
+        if (!running){ running = true; loop(); }
+      } else {
+        running = false;
+        if (raf) cancelAnimationFrame(raf);
+        keys.left = keys.right = false;
+        if (S.mode === "playing") setMode("paused", "Paused", "Click to resume.");
+      }
+    });
+  }, { threshold:.25 }).observe(shell);
+
+  size();
+  syncHUD();
+  draw();
+})();
+
+/* ============================================================
+   9 · TECH MARQUEE
    ============================================================ */
 (() => {
   const track = document.getElementById("mqTrack");
   if (!track) return;
   const tech = [
-    "Python","SQL","Java","JavaScript","Rust","HTML5","CSS3","MySQL","PostgreSQL",
-    "SQL Server","T-SQL","MediaPipe","OpenCV","NumPy","Pandas","Git","REST APIs",
-    "Linux","macOS","Canvas API","LLM Pipelines","RAG","Schema Design","ETL","Cargo","COBOL"
+    "Python","SQL","Java","C#","C++","JavaScript","HTML","CSS","Flask","SQLite","MySQL",
+    "Schema Design","Normalization","CTEs","Window Functions","Git","Canvas API",
+    "Windows","macOS","PC Builds","Hardware","Networking","Troubleshooting","Ticketing","CRM","Excel"
   ];
   const html = tech.map(t => `<span class="chip">${t}</span>`).join("");
   track.innerHTML = html + html;   // duplicated for a seamless -50% loop
 })();
 
 /* ============================================================
-   9 · MISC
+   10 · MISC
    ============================================================ */
 document.getElementById("yr").textContent = new Date().getFullYear();
 
