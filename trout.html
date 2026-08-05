@@ -479,8 +479,10 @@ void main(){
                  texture2D(uGhost, pb).rgb * uGhostDim, g);
 
   /* the river drops away faster than the fish does, so the eye is walked
-     inward rather than the whole frame simply going dim */
-  col *= 1. - uDark * mix(1.15, .55, smoothstep(.35, .62, d));
+     inward rather than the whole frame simply going dim — but the grading
+     itself unwinds as uDark reaches 1, so the frame can reach true black
+     and hand over cleanly to the geometry */
+  col *= 1. - uDark * mix(1.15, .55 + .45 * uDark, smoothstep(.35, .62, d));
 
   /* the wiring rides a deeper camera vector, so it separates from the body
      it sits inside as the frame moves */
@@ -501,8 +503,77 @@ void main(){
   gl_FragColor = vec4(col, 1.);
 }`;
 
-const gl = canvas.getContext("webgl", { alpha:false, antialias:false, depth:false });
+const gl = canvas.getContext("webgl", { alpha:false, antialias:true, depth:true });
 let scene = null;
+
+/* --- just enough matrix maths to fly a camera --- */
+const sub3   = (a,b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+const cross3 = (a,b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const dot3   = (a,b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const norm3  = a => { const l = Math.hypot(a[0],a[1],a[2]) || 1; return [a[0]/l, a[1]/l, a[2]/l]; };
+const ident  = () => new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+
+function perspective(fovy, asp, near, far){
+  const f = 1/Math.tan(fovy/2), nf = 1/(near-far), m = ident();
+  m[0] = f/asp; m[5] = f; m[10] = (far+near)*nf; m[11] = -1; m[14] = 2*far*near*nf; m[15] = 0;
+  return m;
+}
+function lookAt(eye, at, upv){
+  const z = norm3(sub3(eye, at)), x = norm3(cross3(upv, z)), y = cross3(z, x), m = ident();
+  m[0]=x[0]; m[1]=y[0]; m[2]=z[0];
+  m[4]=x[1]; m[5]=y[1]; m[6]=z[1];
+  m[8]=x[2]; m[9]=y[2]; m[10]=z[2];
+  m[12]=-dot3(x,eye); m[13]=-dot3(y,eye); m[14]=-dot3(z,eye);
+  return m;
+}
+function mul4(a,b){
+  const o = ident();
+  for (let i=0;i<4;i++) for (let j=0;j<4;j++){
+    let s=0; for (let k=0;k<4;k++) s += a[k*4+j]*b[i*4+k];
+    o[i*4+j]=s;
+  }
+  return o;
+}
+
+/* the solid: object space runs x ∈ ±A/2, y ∈ ±0.5, and z is the mirrored
+   thickness — which is exactly what the distance transform already gives us */
+const MVS = `
+attribute vec2 aPos; attribute float aThick; attribute vec2 aNrm; attribute float aSide;
+uniform mat4 uMVP; uniform float uThick, uSep, uAspect;
+varying vec2 vUv; varying vec3 vN; varying float vT;
+void main(){
+  vUv = vec2(aPos.x / uAspect + .5, .5 - aPos.y);
+  vN  = normalize(vec3(aNrm * uThick, aSide));
+  vT  = aThick;
+  /* The shells separate vertically, not in depth. Pushing them toward the
+     camera would swell each one by a different amount and the stack would
+     stop reading as one fish; lifting them keeps every shell the same size
+     on screen, which is how an exploded plate is drawn. */
+  float z = aSide * aThick * uThick;
+  gl_Position = uMVP * vec4(aPos.x, aPos.y + uSep, z, 1.);
+}`;
+
+const MFS = `precision highp float;
+varying vec2 vUv; varying vec3 vN; varying float vT;
+uniform sampler2D uTex;
+uniform float uOpacity, uAdditive, uRim;
+void main(){
+  /* The sheet spans the whole plate but has thickness only where the fish
+     is, so the silhouette is carried by alpha rather than by where the
+     triangles stop — which is what keeps the outline off the grid. */
+  float edge = smoothstep(.0, .045, vT);
+  if (edge < .01) discard;
+
+  vec3 N = normalize(vN);
+  float lam = .55 + .45 * max(dot(N, normalize(vec3(-.35, .55, .76))), 0.);
+  float rim = pow(1. - abs(N.z), 3.);
+  vec4 t = texture2D(uTex, vUv);
+  if (uAdditive > .5){
+    gl_FragColor = vec4((t.rgb * t.a + rim * .10) * uOpacity * edge, 1.);
+  } else {
+    gl_FragColor = vec4(t.rgb * lam + rim * uRim, uOpacity * edge);
+  }
+}`;
 
 if (gl){
   const sh = (type, src) => {
@@ -555,7 +626,7 @@ if (gl){
     { unit:3, name:"uDepth", src:"assets/trout-depth.png"  }
   ];
 
-  let aspect = 1800 / 1004;
+  let aspect = 1800 / 1004, landed = 0;
   plates.forEach(pl => {
     pl.tex = mkTex(pl.unit, pl.name);
     const img = new Image();
@@ -564,7 +635,14 @@ if (gl){
       gl.bindTexture(gl.TEXTURE_2D, pl.tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
       if (pl.unit === 0) aspect = img.naturalWidth / img.naturalHeight;
-      if (scene){ scene.resize(); render(); }   // a plate can land while the loop is parked
+      pl.img = img;
+      // the solid needs the depth plate AND the aspect off the colour plate,
+      // so it is cut once everything has landed
+      if (++landed === plates.length && scene){
+        scene.buildMesh(plates[3].img);
+        scene.resize();
+      }
+      if (scene){ scene.resize(); render(); }
     };
     img.src = pl.src;
   });
@@ -586,7 +664,152 @@ if (gl){
   addEventListener("resize", resize, { passive:true });
   if (typeof ResizeObserver !== "undefined") new ResizeObserver(resize).observe(canvas);
 
-  scene = { u, resize, draw: () => gl.drawArrays(gl.TRIANGLES, 0, 3) };
+  /* ---------- the solid ---------- */
+  const mprog = gl.createProgram();
+  gl.attachShader(mprog, sh(gl.VERTEX_SHADER, MVS));
+  gl.attachShader(mprog, sh(gl.FRAGMENT_SHADER, MFS));
+  gl.linkProgram(mprog);
+  const MU = n => gl.getUniformLocation(mprog, n);
+  const mu = { mvp:MU("uMVP"), thick:MU("uThick"), sep:MU("uSep"), asp:MU("uAspect"),
+               tex:MU("uTex"), op:MU("uOpacity"), add:MU("uAdditive"), rim:MU("uRim") };
+  const mAttr = {
+    pos:   gl.getAttribLocation(mprog, "aPos"),
+    thick: gl.getAttribLocation(mprog, "aThick"),
+    nrm:   gl.getAttribLocation(mprog, "aNrm"),
+    side:  gl.getAttribLocation(mprog, "aSide")
+  };
+
+  let mesh = null;
+
+  /* Build a closed body out of the depth map. The distance transform is a
+     thickness field; mirroring it front-to-back closes the surface, and
+     because thickness falls to zero at the silhouette the two halves meet
+     at the rim on their own. */
+  function buildMesh(img){
+    const GW = 200, GH = 112;
+    const c2d = document.createElement("canvas");
+    c2d.width = img.naturalWidth; c2d.height = img.naturalHeight;
+    const ctx = c2d.getContext("2d", { willReadFrequently:true });
+    ctx.drawImage(img, 0, 0);
+    const px = ctx.getImageData(0, 0, c2d.width, c2d.height).data;
+    const dw = c2d.width, dh = c2d.height;
+
+    // the fish sits above ~0.455 in the map; everything under that is riverbed
+    const thickAt = (u,v) => {
+      const x = Math.min(dw-1, Math.max(0, Math.round(u*(dw-1))));
+      const y = Math.min(dh-1, Math.max(0, Math.round(v*(dh-1))));
+      return Math.max(0, (px[(y*dw + x)*4]/255 - .455) / .405);
+    };
+
+    const T = [];
+    for (let j=0;j<=GH;j++){ T[j] = []; for (let i=0;i<=GW;i++) T[j][i] = thickAt(i/GW, j/GH); }
+
+    const A = aspect, verts = [], idx = [], perSide = (GW+1)*(GH+1);
+    for (let s=0;s<2;s++){
+      const side = s ? -1 : 1;
+      for (let j=0;j<=GH;j++) for (let i=0;i<=GW;i++){
+        const du = (T[j][Math.min(GW,i+1)] - T[j][Math.max(0,i-1)]) * .5;
+        const dv = (T[Math.min(GH,j+1)][i] - T[Math.max(0,j-1)][i]) * .5;
+        verts.push((i/GW - .5) * A, .5 - j/GH, T[j][i], -du * GW / A, dv * GH, side);
+      }
+      const base = s * perSide;
+      for (let j=0;j<GH;j++) for (let i=0;i<GW;i++){
+        // every cell is emitted; the fragment stage decides where the fish
+        // actually ends, so the outline never inherits the grid's steps
+        if (T[j][i] + T[j][i+1] + T[j+1][i] + T[j+1][i+1] <= 0) continue;
+        const a = base + j*(GW+1) + i, b = a+1, c3 = a+GW+1, d = c3+1;
+        if (side > 0) idx.push(a, c3, b, b, c3, d);
+        else          idx.push(a, b, c3, b, d, c3);
+      }
+    }
+
+    const vbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+    const ibo = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+    mesh = { vbo, ibo, count: idx.length };
+  }
+
+  const S = 24;   // 6 floats per vertex
+  function bindMesh(){
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vbo);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.ibo);
+    gl.enableVertexAttribArray(mAttr.pos);   gl.vertexAttribPointer(mAttr.pos,   2, gl.FLOAT, false, S, 0);
+    gl.enableVertexAttribArray(mAttr.thick); gl.vertexAttribPointer(mAttr.thick, 1, gl.FLOAT, false, S, 8);
+    gl.enableVertexAttribArray(mAttr.nrm);   gl.vertexAttribPointer(mAttr.nrm,   2, gl.FLOAT, false, S, 12);
+    gl.enableVertexAttribArray(mAttr.side);  gl.vertexAttribPointer(mAttr.side,  1, gl.FLOAT, false, S, 20);
+  }
+
+  /* three concentric shells. The outer two open along the fish's own
+     thickness axis; the wiring stays put in the middle and is revealed. */
+  const SHELLS = [
+    { unit:0, thick:.115, sepMul: 1.00, add:0, rim:.10 },  // skin lifts clear
+    { unit:1, thick:.088, sepMul: 0.00, add:0, rim:.16 },  // glass body holds
+    { unit:2, thick:.042, sepMul:-0.85, add:1, rim:.00 }   // wiring drops below
+  ];
+
+  scene = {
+    u, resize,
+    get meshReady(){ return !!mesh; },
+    buildMesh,
+
+    /* uniforms apply to whichever program is bound, so the quad pass has to
+       be selected before render() starts writing to it */
+    beginQuad(){ gl.useProgram(prog); },
+
+    quad(){
+      gl.useProgram(prog);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.BLEND);
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    },
+
+    solid(yaw, pitch, sep, opacity, shellOps){
+      if (!mesh || opacity <= .002) return;
+      const asp = canvas.width / Math.max(1, canvas.height);
+
+      /* Sit the camera where the plate was. The quad pass cover-fits the
+         photograph, so the solid has to subtend the same angle or the
+         handover reads as a jump cut. */
+      const FOV = 34 * Math.PI/180;
+      const half = Math.tan(FOV/2);
+      const need = asp > aspect ? (aspect/2)/asp : .5;    // object half-extent to fit
+      // cover, same as the plate — then ease back so the separated shells fit
+      const D = (need / half) * (1 + sep * 1.15);
+
+      const ry = yaw*Math.PI/180, rx = pitch*Math.PI/180;
+      const eye = [Math.sin(ry)*Math.cos(rx)*D, Math.sin(rx)*D, Math.cos(ry)*Math.cos(rx)*D];
+      const mvp = mul4(perspective(FOV, asp, .05, 20), lookAt(eye, [0,0,0], [0,1,0]));
+
+      gl.useProgram(mprog);
+      gl.enable(gl.DEPTH_TEST);
+      gl.clear(gl.DEPTH_BUFFER_BIT);
+      gl.enable(gl.BLEND);
+      bindMesh();
+      gl.uniformMatrix4fv(mu.mvp, false, mvp);
+      gl.uniform1f(mu.asp, aspect);
+
+      SHELLS.forEach((s, i) => {
+        const op = opacity * shellOps[i];
+        if (op <= .004) return;
+        if (s.add){ gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false); }
+        else      { gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(true); }
+        gl.uniform1i(mu.tex, s.unit);
+        gl.uniform1f(mu.thick, s.thick);
+        gl.uniform1f(mu.sep, sep * s.sepMul);
+        gl.uniform1f(mu.op, op);
+        gl.uniform1f(mu.add, s.add);
+        gl.uniform1f(mu.rim, s.rim);
+        gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0);
+      });
+      gl.depthMask(true);
+    }
+  };
   resize();
 } else {
   cam.classList.add("fallback");
@@ -603,24 +826,29 @@ function render(){
      are targets — the animatable eases into them, and the shader reads the
      eased angle back so both stay on one value. */
   if (camera){
-    camera.rotateY(utils.mapRange(t, 0, 1, -7, 7) + lean.x * 4);
-    camera.rotateX(Math.sin(t * Math.PI) * 1.6 - .4 - lean.y * 2.6);
-    camera.rotateZ(Math.sin(t * Math.PI * 1.15) * .8);
-    camera.scale(1 + t * .06);
+    // the canvas stops being tilted once the real camera inside it takes over
+    const flat = 1 - up(t, .58, .74);
+    camera.rotateY((utils.mapRange(t, 0, 1, -7, 7) + lean.x * 4) * flat);
+    camera.rotateX((Math.sin(t * Math.PI) * 1.6 - .4 - lean.y * 2.6) * flat);
+    camera.rotateZ(Math.sin(t * Math.PI * 1.15) * .8 * flat);
+    camera.scale(1 + t * .06 * flat);
   }
 
-  /* ── the plates ── */
+  /* ── pass one: the photographs, with depth parallax ── */
   if (scene){
+    scene.beginQuad();
+
+    const solidIn = up(t, .60, .76);          // the geometry taking over
+
     gl.uniform1f(scene.u.mix,  up(t, .16, .42));            // vivid → glass
     gl.uniform1f(scene.u.dim,  1 - up(t, .52, .80) * .72);  // then the glass dims
-    gl.uniform1f(scene.u.wN,   up(t, .44, .64));
-    gl.uniform1f(scene.u.dark, up(t, .46, .80) * .70);
+    gl.uniform1f(scene.u.wN,   up(t, .44, .64) * (1 - solidIn));
+    gl.uniform1f(scene.u.dark, Math.min(1, up(t, .46, .78) * 1.02));
     gl.uniform1f(scene.u.grain, (performance.now() * .001) % 100);
 
-    /* the wiring pulls away from the body it is threaded through */
-    const sep = up(t, .70, 1);
-    gl.uniform1f(scene.u.lift, 1 + sep * 1.9);
-    gl.uniform1f(scene.u.rise, sep * .035);
+    const lift = up(t, .70, 1);
+    gl.uniform1f(scene.u.lift, 1 + lift * 1.9);
+    gl.uniform1f(scene.u.rise, lift * .035);
 
     /* the eased camera angle, read straight back off the animatable, becomes
        the parallax vector. Degrees in, texture-space offset out. */
@@ -628,7 +856,24 @@ function render(){
     const pitch = camera ? parseFloat(utils.get(cam, "rotateX")) || 0 : 0;
     gl.uniform2f(scene.u.cam, (yaw / 7) * .052, (pitch / 7) * .030);
 
-    scene.draw();
+    scene.quad();
+
+    /* ── pass two: the solid ──
+       A real perspective camera swinging round real geometry, so the far
+       flank genuinely comes into view and the shells occlude each other
+       instead of being stacked. */
+    /* The shells nest, so with depth testing the wiring is genuinely inside
+       the fish and cannot be seen until the body opens around it. The skin
+       therefore has to peel before the nerves are worth revealing. */
+    scene.solid(
+      -16 + up(t, .62, 1) * 80 + lean.x * 9,      // yaw: a proper orbit
+      7 + Math.sin(t * Math.PI) * 5 - lean.y * 7, // pitch
+      up(t, .74, 1) * .46,                        // the shells draw apart
+      solidIn,
+      [ up(t, .60, .68),                          // skin, lifting clear
+        up(t, .64, .74),                          // glass body, holding station
+        up(t, .70, .84) ]                         // wiring, drawn out below
+    );
   }
 
   /* ── captions ── */
