@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trout Anatomy · Braydon Glass</title>
+<meta name="description" content="A full-bleed, scroll-scrubbed dissection of a rainbow trout built with anime.js: the body turns translucent, the nervous system lights up, and the layers come apart.">
+<style>
+:root{
+  --bg:#0a0a0b;
+  --raise:#101012;
+  --ink:#e7e5e1;
+  --mid:#a3a09a;
+  --dim:#6f6c67;
+  --rule:#232326;
+  --rule-2:#33333a;
+  --accent:#f0552b;
+  --cyan:#7fe9ff;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --pad:clamp(20px,5vw,64px);
+  --col:clamp(96px,13vw,168px);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{ color:inherit; }
+.wrap{ max-width:1080px; margin-inline:auto; padding-inline:var(--pad); }
+
+/* masthead floats over the picture until the picture is gone */
+.masthead{
+  position:fixed; top:0; left:0; right:0; z-index:60;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--bg) 66%, transparent), transparent);
+  border-bottom:1px solid transparent;
+  transition:background .3s ease, border-color .3s ease;
+}
+.masthead.solid{
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:saturate(140%) blur(10px);
+  -webkit-backdrop-filter:saturate(140%) blur(10px);
+  border-bottom-color:var(--rule);
+}
+.masthead .inner{
+  max-width:1080px; margin-inline:auto; padding:14px var(--pad);
+  display:flex; align-items:baseline; justify-content:space-between; gap:20px;
+}
+.wordmark{
+  font:600 13px/1 var(--mono); letter-spacing:.06em; text-decoration:none; white-space:nowrap;
+  text-shadow:0 1px 12px rgba(0,0,0,.6);
+}
+.wordmark s{ text-decoration:none; color:var(--accent); }
+.back{
+  font:500 12.5px/1 var(--mono); color:var(--ink); text-decoration:none;
+  border-bottom:1px solid transparent; padding-bottom:2px;
+  text-shadow:0 1px 12px rgba(0,0,0,.6);
+}
+.back:hover{ border-bottom-color:var(--accent); }
+
+/* ══════════════════════════════════════════════════════════
+   SCROLL-SCRUBBED DISSECTION
+
+   .track is a tall scroll runway; .stick pins one full-viewport
+   frame for its whole length. Scrolling drives a single number,
+   0 → 1, and every layer reads its opacity and offset from that
+   number, so the stack can never fall out of step with itself.
+
+   All four photographs share one camera and one crop, so the
+   layers register exactly and the fish appears to open up in
+   place rather than to be replaced.
+   ══════════════════════════════════════════════════════════ */
+.track{ position:relative; height:460vh; }
+
+.stick{
+  position:sticky; top:0;
+  height:100vh; height:100svh;
+  overflow:hidden; background:#000;
+  perspective:1100px; perspective-origin:50% 46%;
+}
+
+/* The camera is a real 3D context. The photographic plates stay flat inside
+   it; only the nerve volume has thickness, which is what makes the orbit read
+   as depth instead of as a skewed card. */
+.cam{ position:absolute; inset:0; transform-style:preserve-3d; will-change:transform; }
+
+.stack{ position:absolute; inset:-9%; will-change:opacity; }
+.grp{ position:absolute; inset:0; will-change:transform; }
+.lay{
+  position:absolute; inset:0; display:block;
+  width:100%; height:100%; object-fit:cover; object-position:center;
+}
+.lay.vivid,.lay.ghost{ will-change:opacity; }
+
+/* black plate that swallows the river so the nerves can float free */
+.dark{ position:absolute; inset:0; background:#000; opacity:0; }
+
+/* the nerve volume: identical alpha plates spaced through Z. Alpha, not a
+   blend mode — blending does not survive nesting inside a 3D context. */
+.vol{
+  position:absolute; inset:-9%; opacity:0;
+  transform-style:preserve-3d; will-change:transform,opacity;
+}
+.vol img{
+  position:absolute; inset:0; display:block;
+  width:100%; height:100%; object-fit:cover; object-position:center;
+  backface-visibility:hidden;
+}
+
+/* keeps the masthead and the copy legible over water and bright gravel */
+.scrim{
+  position:absolute; inset:0; pointer-events:none; z-index:2;
+  background:linear-gradient(180deg,
+    color-mix(in srgb, var(--bg) 70%, transparent) 0%,
+    transparent 18%,
+    transparent 46%,
+    color-mix(in srgb, var(--bg) 62%, transparent) 84%,
+    color-mix(in srgb, var(--bg) 92%, transparent) 100%);
+}
+
+/* ── stage captions, cross-fading in place ── */
+.titles{
+  position:absolute; inset:auto 0 0 0; z-index:4;
+  padding-bottom:clamp(76px,14vh,140px); pointer-events:none;
+}
+.cap{
+  position:absolute; inset:auto 0 0 0; opacity:0;
+  padding-bottom:inherit;
+}
+.cap .wrap{ pointer-events:none; }
+.cap .no{
+  margin:0 0 12px; font:500 11px/1.6 var(--mono); letter-spacing:.22em;
+  text-transform:uppercase; color:var(--accent);
+}
+.cap h2{
+  margin:0; max-width:15ch;
+  font:600 clamp(30px,6.2vw,66px)/1.03 var(--mono); letter-spacing:-.04em;
+  text-shadow:0 2px 34px rgba(0,0,0,.6);
+}
+.cap h2 .dim{ color:var(--mid); }
+.cap p{
+  margin:18px 0 0; max-width:50ch; font-size:clamp(15.5px,1.9vw,18px);
+  color:var(--ink); text-shadow:0 1px 20px rgba(0,0,0,.75);
+}
+.cap.c3 .no{ color:var(--cyan); }
+
+/* ── stage rail ── */
+.rail{
+  position:absolute; right:var(--pad); top:50%; transform:translateY(-50%);
+  z-index:4; margin:0; padding:0; list-style:none;
+  display:flex; flex-direction:column; align-items:flex-end; gap:14px;
+  pointer-events:none;
+}
+.rail li{
+  display:flex; flex-direction:row-reverse; align-items:center; gap:10px;
+  font:500 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--dim); transition:color .3s ease;
+}
+.rail li::before{
+  content:""; width:16px; height:1px; background:currentColor;
+  transition:width .3s ease, background .3s ease;
+}
+.rail li.on{ color:var(--ink); }
+.rail li.on::before{ width:30px; background:var(--accent); }
+
+/* ── HUD ── */
+.hud{
+  position:absolute; left:0; right:0; bottom:0; z-index:5;
+  max-width:1080px; margin-inline:auto;
+  padding:0 var(--pad) clamp(20px,3.4vh,30px);
+  display:flex; align-items:center; justify-content:flex-end; gap:12px;
+  font:500 10.5px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--dim); pointer-events:none;
+}
+.hud .bar{
+  display:block; width:clamp(70px,14vw,150px); height:2px;
+  background:color-mix(in srgb, var(--ink) 20%, transparent);
+}
+.hud .bar i{ display:block; height:100%; width:0%; background:var(--accent); }
+.hud b{ color:var(--ink); font-weight:500; font-variant-numeric:tabular-nums; }
+
+.cue{
+  position:absolute; left:50%; bottom:clamp(50px,7.6vh,72px); transform:translateX(-50%);
+  z-index:5; margin:0; text-align:center;
+  font:500 10.5px/1.8 var(--mono); letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink); text-shadow:0 1px 14px rgba(0,0,0,.8); pointer-events:none;
+}
+
+/* ── prose ── */
+section.notes{ border-top:1px solid var(--rule); }
+.row{ display:grid; grid-template-columns:var(--col) 1fr; gap:clamp(16px,4vw,48px); padding:52px 0; }
+.lbl{
+  margin:0 0 12px; align-self:start;
+  font:500 11.5px/1.5 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
+}
+.lbl em{ font-style:normal; color:var(--accent); }
+.body > p{ margin:0 0 18px; max-width:66ch; color:var(--mid); }
+.body > p:last-child{ margin-bottom:0; }
+.body strong{ color:var(--ink); font-weight:600; }
+code{ font:400 .92em/1 var(--mono); color:var(--ink); }
+
+.defs{ margin:0; }
+.defs > div{
+  display:grid; grid-template-columns:clamp(90px,12vw,132px) 1fr; gap:12px 20px;
+  padding:12px 0; border-top:1px solid var(--rule);
+}
+.defs > div:first-child{ border-top:0; padding-top:0; }
+.defs dt{ font:500 11px/1.8 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+.defs dd{ margin:0; font:400 14.5px/1.8 var(--mono); color:var(--ink); }
+.defs dd i{ font-style:normal; color:var(--rule-2); padding:0 2px; }
+
+footer{
+  padding:26px 0 44px;
+  display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  font:500 11.5px/1.7 var(--mono); letter-spacing:.03em; color:var(--dim);
+  border-top:1px solid var(--rule);
+}
+footer a{ color:var(--dim); }
+
+@media (max-width:900px){
+  .rail{ display:none; }
+}
+@media (max-width:720px){
+  .row{ grid-template-columns:1fr; gap:14px; padding:40px 0; }
+  .defs > div{ grid-template-columns:1fr; gap:4px; }
+  .track{ height:400vh; }
+  .hud{ font-size:9.5px; }
+}
+
+/* no scroll-jacking for anyone who has asked motion to stop:
+   the runway collapses and the final plate is simply shown */
+@media (prefers-reduced-motion:reduce){
+  .track{ height:auto; }
+  .stick{ position:static; height:74vh; }
+  .cue{ display:none; }
+  .masthead{ position:sticky; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead" id="masthead">
+  <div class="inner">
+    <a class="wordmark" href="index.html">BRAYDON GLASS<s>.</s></a>
+    <a class="back" href="index.html">&larr; Back to portfolio</a>
+  </div>
+</header>
+
+<main>
+
+<section class="track" id="track">
+  <div class="stick">
+
+    <div class="cam" id="cam">
+      <div class="stack" id="stack">
+        <div class="grp" id="grpBody">
+          <img class="lay vivid" id="layVivid" src="assets/trout-vivid.jpg"
+               alt="A rainbow trout in full spawning colour holding in a clear river, with a deep crimson stripe along its flank."
+               decoding="async" fetchpriority="high" width="1800" height="1004">
+          <img class="lay ghost" id="layGhost" src="assets/trout-ghost.jpg"
+               alt="The same trout rendered semi-transparent, its skull, vertebral column and ribs visible through the body."
+               decoding="async" width="1800" height="1004">
+        </div>
+
+        <div class="dark" id="dark"></div>
+      </div>
+
+      <!-- the nervous system as a volume: identical alpha plates spaced through
+           depth, so the camera orbits something with real thickness rather than
+           skewing a single flat card. Slices are built in script. -->
+      <div class="vol" id="vol" role="img"
+           aria-label="The trout's nervous system glowing in three dimensions: brain, spinal cord, cranial nerves, segmental spinal nerves and the lateral line nerve."></div>
+    </div>
+
+    <div class="scrim"></div>
+
+    <ol class="rail" id="rail" aria-hidden="true">
+      <li>Intact</li>
+      <li>Skeleton</li>
+      <li>Nervous system</li>
+      <li>Separated</li>
+    </ol>
+
+    <div class="titles">
+      <div class="cap c0" id="cap0"><div class="wrap">
+        <p class="no">01 &nbsp;Intact</p>
+        <h2><span class="dim">Rainbow</span> Trout.</h2>
+        <p>A spawning male holding in current. Everything that follows is the same
+           photograph, opened up a layer at a time.</p>
+      </div></div>
+
+      <div class="cap c1" id="cap1"><div class="wrap">
+        <p class="no">02 &nbsp;Skeleton</p>
+        <h2>Through the <span class="dim">body.</span></h2>
+        <p>Skin and muscle turn to glass. The skull, the vertebral column and the fine
+           rib bones carry the shape from the inside.</p>
+      </div></div>
+
+      <div class="cap c2" id="cap2"><div class="wrap">
+        <p class="no">03 &nbsp;Nervous system</p>
+        <h2>The wiring <span class="dim">lights up.</span></h2>
+        <p>Brain, spinal cord, cranial nerves, the segmental nerves stacked down the body,
+           and the lateral line the fish reads moving water with.</p>
+      </div></div>
+
+      <div class="cap c3" id="cap3"><div class="wrap">
+        <p class="no">04 &nbsp;Separated</p>
+        <h2>Coming <span class="dim">apart.</span></h2>
+        <p>The nervous system lifts clear of the body it was threaded through &mdash; one
+           continuous structure, from the brain to the last nerve in the tail.</p>
+      </div></div>
+    </div>
+
+    <div class="hud">
+      <span class="bar"><i id="meter"></i></span>
+      <b id="count">00%</b>
+    </div>
+
+    <p class="cue" id="cue">Scroll &darr;</p>
+
+  </div>
+</section>
+
+<section class="notes">
+  <div class="wrap row">
+    <p class="lbl"><em>01</em> &nbsp;How it works</p>
+    <div class="body">
+      <p>
+        Four plates share one camera and one crop. Because nothing shifts between them, the
+        stack can cross-fade in place and read as a single fish opening up, rather than as
+        four pictures taking turns. Registration is the whole trick; without it the illusion
+        collapses immediately.
+      </p>
+      <p>
+        The section is a tall <strong>scroll runway</strong> with one viewport-sized frame
+        pinned for its full length. Scrolling produces <strong>a single number</strong>
+        between 0 and 1, and every layer derives its own opacity and offset from that one
+        value, so the stack can never disagree with itself or with the captions.
+      </p>
+      <p>
+        The last stage is a real <strong>3D orbit</strong>, and it only works because the
+        nervous system is not a picture. The glow plate is cut to alpha and repeated thirteen
+        times through a hundred pixels of depth, so where the plates overlap their alpha
+        accumulates: the cord and brain build into solid cores, the fine filaments stay wispy,
+        and the whole thing gains thickness the camera can travel around.
+      </p>
+      <p>
+        The photographs cannot do that &mdash; they are flat, and past about fifteen degrees a
+        flat plate stops looking like a fish and starts looking like a card. So they retire
+        before the wide swing begins: a restrained drift while they carry the frame, then the
+        camera opens out to forty-odd degrees once only the volume is left. A small lean
+        toward the pointer runs underneath the whole thing.
+      </p>
+      <p>
+        <strong>anime.js</strong> does the animating: <code>animate()</code> with
+        <code>stagger()</code> brings this text in, and its <code>utils</code> carry the ramps
+        and mapping behind every layer. Scroll position itself is measured straight off the
+        runway rather than through <code>onScroll()</code>, whose sync scrubbing did not report
+        reliably here and is not something a centrepiece should depend on. The nerve plate
+        began as glow on black; its luminance was baked into an alpha channel instead, because
+        a blend mode does not survive being nested inside a 3D context and the volume needed
+        one.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="notes">
+  <div class="wrap row">
+    <p class="lbl"><em>02</em> &nbsp;Notes</p>
+    <div class="body">
+      <dl class="defs">
+        <div><dt>Animation</dt><dd>anime.js 4.5.0 <i>/</i> vendored <i>/</i> no build step</dd></div>
+        <div><dt>Driver</dt><dd>measured runway <i>/</i> damped follow <i>/</i> one value</dd></div>
+        <div><dt>Camera</dt><dd>preserve-3d <i>/</i> 46&deg; orbit <i>/</i> pointer lean</dd></div>
+        <div><dt>Volume</dt><dd>13 alpha slices <i>/</i> 104px depth <i>/</i> accumulated</dd></div>
+        <div><dt>Layers</dt><dd>intact <i>/</i> translucent <i>/</i> nervous system</dd></div>
+        <div><dt>Access</dt><dd>reduced-motion <i>/</i> alt text <i>/</i> idle loop parked</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <span>&copy; <span id="yr">2026</span> Braydon Glass</span>
+    <span>anime.js &middot; vendored &middot; <a href="index.html">back to portfolio</a></span>
+  </footer>
+</div>
+
+</main>
+
+<script src="assets/anime.umd.min.js"></script>
+<script>
+(() => {
+"use strict";
+
+document.getElementById("yr").textContent = new Date().getFullYear();
+
+const { animate, utils, stagger } = window.anime;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const track   = document.getElementById("track");
+const grpBody = document.getElementById("grpBody");
+const vivid   = document.getElementById("layVivid");
+const ghost   = document.getElementById("layGhost");
+const dark    = document.getElementById("dark");
+const stack   = document.getElementById("stack");
+const vol     = document.getElementById("vol");
+const meter   = document.getElementById("meter");
+const count   = document.getElementById("count");
+const cue     = document.getElementById("cue");
+const mast    = document.getElementById("masthead");
+const caps    = [0,1,2,3].map(i => document.getElementById("cap" + i));
+const rail    = [...document.querySelectorAll("#rail li")];
+const cam     = document.getElementById("cam");
+
+/* where the camera is leaning, and where it is being asked to lean */
+const look = { x:0, y:0, tx:0, ty:0 };
+
+addEventListener("pointermove", e => {
+  if (e.pointerType === "touch") return;      // let a finger scroll in peace
+  look.tx = (e.clientX / innerWidth  - .5) * 2;
+  look.ty = (e.clientY / innerHeight - .5) * 2;
+}, { passive:true });
+
+/* a ramp from 0 → 1 between a and b */
+const up = (t,a,b) => utils.clamp(utils.mapRange(t,a,b,0,1), 0, 1);
+/* a ramp up over [a,b] that falls away again over [c,d] */
+const band = (t,a,b,c,d) => Math.min(up(t,a,b), 1 - up(t,c,d));
+
+/* ---------------------------------------------------------
+   build the nerve volume
+
+   One image, repeated through depth. Where the plates overlap
+   their alpha accumulates, so the cord and brain read as solid
+   cores and the fine filaments stay wispy — and the whole thing
+   has real thickness for the camera to travel around.
+   --------------------------------------------------------- */
+const SLICES = innerWidth < 900 ? 7 : 13;
+const SPREAD = 104;                              // px of depth the volume fills
+
+for (let i = 0; i < SLICES; i++){
+  const img = new Image();
+  img.src = "assets/trout-nerves.png";
+  img.decoding = "async";
+  img.alt = "";
+  img.style.transform = "translateZ(" + ((i / (SLICES - 1) - .5) * SPREAD).toFixed(1) + "px)";
+  img.style.opacity   = (1.9 / SLICES).toFixed(3);
+  vol.appendChild(img);
+}
+
+const state = { t: 0 };
+
+function render(){
+  const t = utils.clamp(state.t, 0, 1);
+
+  /* ── layer 1→2: the body turns to glass ── */
+  const toGhost = up(t, .18, .38);
+  vivid.style.opacity = 1 - toGhost;
+
+  /* ...and then dims again once the nerves are carrying the frame */
+  ghost.style.opacity = toGhost * (1 - up(t, .52, .78) * .78);
+
+  /* ── the river drains away so the nerves have somewhere dark to sit ── */
+  dark.style.opacity = up(t, .46, .74) * .88;
+
+  /* ── layer 3: the wiring comes up ── */
+  vol.style.opacity = up(t, .44, .64);
+
+  /* the photographic plates retire before the wide orbit begins — they are
+     flat, and past about 15 degrees a flat plate starts to read as a card */
+  stack.style.opacity = 1 - up(t, .78, .95);
+
+  /* ── layer 4: the stack comes apart ──
+     the two groups also drift sideways by different amounts, which under the
+     rotating camera below reads as real depth between them */
+  const e  = up(t, .78, 1);
+  const px = utils.mapRange(t, 0, 1, -1.1, 1.1);
+  grpBody.style.transform = "translate3d(" + (px * .5) + "%," + (e * 7) + "vh,0) scale(" + (1 - e * .04) + ")";
+  vol.style.transform     = "translate3d(" + (px * 1.7) + "%," + (e * -5) + "vh,0) scale(" + (1 + e * .06) + ")";
+
+  /* ── the camera ──
+     A restrained drift while the photographs are still carrying the frame,
+     then a real orbit once only the nerve volume is left — that volume has
+     genuine thickness, so swinging wide around it reveals depth rather than
+     flattening. A small lean toward the pointer keeps it alive throughout. */
+  if (!reduced){
+    const orbit = up(t, .52, 1);
+    const yaw   = utils.mapRange(t, 0, 1, -6, 6) + orbit * 40 + look.x * 3.2;
+    const pitch = Math.sin(t * Math.PI) * 2 - .5 - orbit * 3 - look.y * 2;
+    const roll  = Math.sin(t * Math.PI * 1.15) * 1.15;
+    const dolly = 1 + t * .10;
+    cam.style.transform =
+      "translate3d(" + (-px * .6) + "%," + (Math.sin(t * Math.PI) * -1.1) + "%,0)" +
+      " scale(" + dolly + ")" +
+      " rotateX(" + pitch + "deg) rotateY(" + yaw + "deg) rotateZ(" + roll + "deg)";
+  }
+
+  /* ── captions ── */
+  caps[0].style.opacity = band(t, 0,   .01, .16, .24);
+  caps[1].style.opacity = band(t, .22, .30, .42, .50);
+  caps[2].style.opacity = band(t, .50, .58, .72, .80);
+  caps[3].style.opacity = up(t, .84, .92);
+
+  /* ── rail + readout ── */
+  const stage = t < .22 ? 0 : t < .50 ? 1 : t < .80 ? 2 : 3;
+  rail.forEach((li,i) => li.classList.toggle("on", i === stage));
+
+  const pct = Math.round(t * 100);
+  count.textContent = String(pct).padStart(2,"0") + "%";
+  meter.style.width = pct + "%";
+
+  cue.style.opacity = 1 - up(t, 0, .08);
+}
+
+/* ---------------------------------------------------------
+   how far through the runway we are
+
+   anime.js's onScroll() sync scrubbing would normally own this,
+   but its behaviour was not dependable across reloads here, and
+   a centrepiece should not rest on something that intermittently
+   reports 0. Measuring the runway is four lines and cannot drift.
+   anime.js still does the easing: utils.damp is frame-rate
+   independent, so the lag feels identical at 60Hz and 120Hz.
+   --------------------------------------------------------- */
+function measure(){
+  const r = track.getBoundingClientRect();
+  const span = r.height - innerHeight;
+  return span > 0 ? utils.clamp(-r.top / span, 0, 1) : 0;
+}
+
+let running = false, last = 0;
+
+function frame(now){
+  const dt = last ? Math.min((now - last) / 1000, .05) : .016;
+  last = now;
+
+  const target = measure();
+
+  // exponential smoothing, raised to dt so the feel is identical at any
+  // refresh rate: ~10% of the remaining gap per frame at 60Hz
+  state.t += (target - state.t) * (1 - Math.pow(.0015, dt));
+  if (Math.abs(target - state.t) < .0002) state.t = target;   // settle exactly
+
+  // the camera lean trails the pointer more slowly than the scrub does
+  const lk = 1 - Math.pow(.02, dt);
+  look.x += (look.tx - look.x) * lk;
+  look.y += (look.ty - look.y) * lk;
+
+  render();
+  if (running) requestAnimationFrame(frame);
+}
+
+if (reduced){
+  /* show the finished plate, no runway, no scrubbing */
+  state.t = 1;
+  render();
+} else {
+  state.t = measure();
+  render();
+
+  /* only burn a frame loop while the runway is actually on screen */
+  const io = new IntersectionObserver(es => {
+    const vis = es[0].isIntersecting;
+    if (vis && !running){
+      running = true; last = 0;
+      requestAnimationFrame(frame);
+    } else if (!vis && running){
+      running = false;
+      state.t = measure();
+      render();
+    }
+  }, { rootMargin: "150px 0px" });
+  io.observe(track);
+}
+
+/* ---------------------------------------------------------
+   the prose below arrives on its own
+   --------------------------------------------------------- */
+if (!reduced){
+  const io2 = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      io2.unobserve(e.target);
+      animate(e.target.querySelectorAll(".lbl, .body > *"), {
+        opacity: [0, 1],
+        y: [14, 0],
+        duration: 720,
+        delay: stagger(70),
+        ease: "outQuad"
+      });
+    });
+  }, { threshold: .12 });
+  document.querySelectorAll("section.notes .row").forEach(r => io2.observe(r));
+}
+
+/* the bar only earns a background once it is clear of the picture */
+const solid = () => mast.classList.toggle("solid", scrollY > track.offsetHeight - innerHeight * .5);
+addEventListener("scroll", solid, { passive:true });
+solid();
+
+})();
+</script>
+</body>
+</html>
