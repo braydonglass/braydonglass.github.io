@@ -65,12 +65,13 @@ a{ color:inherit; }
 
    .track is a tall scroll runway; .stick pins one full-viewport
    frame for its whole length. Scrolling drives a single number,
-   0 → 1, and every layer reads its opacity and offset from that
-   number, so the stack can never fall out of step with itself.
+   0 → 1, and every plate weight is derived from it, so nothing
+   can fall out of step with anything else.
 
-   All four photographs share one camera and one crop, so the
-   layers register exactly and the fish appears to open up in
-   place rather than to be replaced.
+   The plates share one camera and one crop, so they register
+   exactly and the fish opens up in place rather than being
+   replaced. They are composited in a shader, not in the DOM —
+   see the script for the depth parallax.
    ══════════════════════════════════════════════════════════ */
 .track{ position:relative; height:460vh; }
 
@@ -84,30 +85,13 @@ a{ color:inherit; }
 /* The camera is a real 3D context. The photographic plates stay flat inside
    it; only the nerve volume has thickness, which is what makes the orbit read
    as depth instead of as a skewed card. */
-.cam{ position:absolute; inset:0; transform-style:preserve-3d; will-change:transform; }
+/* oversized a little so the few degrees of real rotation never swing an
+   edge into frame */
+.cam{ position:absolute; inset:-4%; transform-style:preserve-3d; will-change:transform; }
 
-.stack{ position:absolute; inset:-9%; will-change:opacity; }
-.grp{ position:absolute; inset:0; will-change:transform; }
-.lay{
-  position:absolute; inset:0; display:block;
-  width:100%; height:100%; object-fit:cover; object-position:center;
-}
-.lay.vivid,.lay.ghost{ will-change:opacity; }
-
-/* black plate that swallows the river so the nerves can float free */
-.dark{ position:absolute; inset:0; background:#000; opacity:0; }
-
-/* the nerve volume: identical alpha plates spaced through Z. Alpha, not a
-   blend mode — blending does not survive nesting inside a 3D context. */
-.vol{
-  position:absolute; inset:-9%; opacity:0;
-  transform-style:preserve-3d; will-change:transform,opacity;
-}
-.vol img{
-  position:absolute; inset:0; display:block;
-  width:100%; height:100%; object-fit:cover; object-position:center;
-  backface-visibility:hidden;
-}
+.gl{ position:absolute; inset:0; display:block; width:100%; height:100%; }
+.cam.fallback{ background:url(assets/trout-vivid.jpg) center/cover; }
+.cam.fallback .gl{ display:none; }
 
 /* keeps the masthead and the copy legible over water and bright gravel */
 .scrim{
@@ -253,26 +237,16 @@ footer a{ color:var(--dim); }
 <section class="track" id="track">
   <div class="stick">
 
+    <!-- Every plate is sampled through a depth map in one shader, so moving
+         the camera shifts near pixels further than far ones. That is real
+         parallax off a single photograph, not a rotated card. -->
     <div class="cam" id="cam">
-      <div class="stack" id="stack">
-        <div class="grp" id="grpBody">
-          <img class="lay vivid" id="layVivid" src="assets/trout-vivid.jpg"
-               alt="A rainbow trout in full spawning colour holding in a clear river, with a deep crimson stripe along its flank."
-               decoding="async" fetchpriority="high" width="1800" height="1004">
-          <img class="lay ghost" id="layGhost" src="assets/trout-ghost.jpg"
-               alt="The same trout rendered semi-transparent, its skull, vertebral column and ribs visible through the body."
-               decoding="async" width="1800" height="1004">
-        </div>
-
-        <div class="dark" id="dark"></div>
-      </div>
-
-      <!-- the nervous system as a volume: identical alpha plates spaced through
-           depth, so the camera orbits something with real thickness rather than
-           skewing a single flat card. Slices are built in script. -->
-      <div class="vol" id="vol" role="img"
-           aria-label="The trout's nervous system glowing in three dimensions: brain, spinal cord, cranial nerves, segmental spinal nerves and the lateral line nerve."></div>
+      <canvas class="gl" id="gl" role="img"
+              aria-label="A rainbow trout in a clear river, shown first in full spawning colour, then with its body turned translucent to reveal the skull and vertebral column, then with its nervous system glowing: brain, spinal cord, cranial nerves and the lateral line."></canvas>
     </div>
+
+    <!-- if WebGL is unavailable the piece still reads, just without depth -->
+    <noscript><style>.cam{ background:url(assets/trout-vivid.jpg) center/cover; }</style></noscript>
 
     <div class="scrim"></div>
 
@@ -340,28 +314,35 @@ footer a{ color:var(--dim); }
         value, so the stack can never disagree with itself or with the captions.
       </p>
       <p>
-        The last stage is a real <strong>3D orbit</strong>, and it only works because the
-        nervous system is not a picture. The glow plate is cut to alpha and repeated thirteen
-        times through a hundred pixels of depth, so where the plates overlap their alpha
-        accumulates: the cord and brain build into solid cores, the fine filaments stay wispy,
-        and the whole thing gains thickness the camera can travel around.
+        The depth is real, and that is the whole point. Rotating a photograph in CSS only ever
+        skews a flat card &mdash; there is no far side of the fish to bring round, so past a
+        few degrees the trick shows. Instead every plate is sampled through a
+        <strong>depth map</strong> in one fragment shader: each pixel's lookup is displaced by
+        its own depth times the camera vector, so near pixels travel further across the frame
+        than far ones. That is what parallax is, and it is why the flank now slides against
+        the gravel behind it.
       </p>
       <p>
-        The photographs cannot do that &mdash; they are flat, and past about fifteen degrees a
-        flat plate stops looking like a fish and starts looking like a card. So they retire
-        before the wide swing begins: a restrained drift while they carry the frame, then the
-        camera opens out to forty-odd degrees once only the volume is left. A small lean
-        toward the pointer runs underneath the whole thing.
+        The offset is solved by fixed-point iteration rather than in a single step, so a near
+        surface can occlude what sits behind it instead of smearing through it. The depth map
+        itself was derived from the fish's own silhouette: a Euclidean distance transform of
+        the outline, square-rooted into a rounded cross-section, which is close to how a trout
+        is actually shaped through the body, over a gradient for the receding riverbed.
       </p>
       <p>
-        <strong>anime.js</strong> does the animating: <code>animate()</code> with
-        <code>stagger()</code> brings this text in, and its <code>utils</code> carry the ramps
-        and mapping behind every layer. Scroll position itself is measured straight off the
-        runway rather than through <code>onScroll()</code>, whose sync scrubbing did not report
-        reliably here and is not something a centrepiece should depend on. The nerve plate
-        began as glow on black; its luminance was baked into an alpha channel instead, because
-        a blend mode does not survive being nested inside a 3D context and the volume needed
-        one.
+        Because the shader carries the dimensionality, the camera only turns about seven
+        degrees. It never needs to oversell. The nervous system is sampled on a deeper camera
+        vector than the body, so it separates from the flesh it is threaded through as the
+        frame moves rather than by being slid across it.
+      </p>
+      <p>
+        <strong>anime.js</strong> owns the camera. It is an <code>createAnimatable()</code>,
+        handed target angles every frame and easing into them on its own clock; the shader then
+        reads that eased angle straight back with <code>utils.get()</code> and turns it into
+        the parallax vector, so the CSS rotation and the depth displacement can never come
+        apart. <code>animate()</code> with <code>stagger()</code> brings this text in. Scroll
+        position is measured off the runway directly rather than through <code>onScroll()</code>,
+        whose sync scrubbing did not report reliably here.
       </p>
     </div>
   </div>
@@ -374,8 +355,9 @@ footer a{ color:var(--dim); }
       <dl class="defs">
         <div><dt>Animation</dt><dd>anime.js 4.5.0 <i>/</i> vendored <i>/</i> no build step</dd></div>
         <div><dt>Driver</dt><dd>measured runway <i>/</i> damped follow <i>/</i> one value</dd></div>
-        <div><dt>Camera</dt><dd>preserve-3d <i>/</i> 46&deg; orbit <i>/</i> pointer lean</dd></div>
-        <div><dt>Volume</dt><dd>13 alpha slices <i>/</i> 104px depth <i>/</i> accumulated</dd></div>
+        <div><dt>Depth</dt><dd>WebGL <i>/</i> GLSL <i>/</i> parallax by depth map</dd></div>
+        <div><dt>Depth map</dt><dd>distance transform <i>/</i> silhouette <i>/</i> synthesised</dd></div>
+        <div><dt>Camera</dt><dd>createAnimatable <i>/</i> 7&deg; <i>/</i> pointer lean</dd></div>
         <div><dt>Layers</dt><dd>intact <i>/</i> translucent <i>/</i> nervous system</dd></div>
         <div><dt>Access</dt><dd>reduced-motion <i>/</i> alt text <i>/</i> idle loop parked</dd></div>
       </dl>
@@ -399,16 +381,11 @@ footer a{ color:var(--dim); }
 
 document.getElementById("yr").textContent = new Date().getFullYear();
 
-const { animate, utils, stagger } = window.anime;
+const { animate, utils, stagger, createAnimatable } = window.anime;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const track   = document.getElementById("track");
-const grpBody = document.getElementById("grpBody");
-const vivid   = document.getElementById("layVivid");
-const ghost   = document.getElementById("layGhost");
-const dark    = document.getElementById("dark");
-const stack   = document.getElementById("stack");
-const vol     = document.getElementById("vol");
+const canvas  = document.getElementById("gl");
 const meter   = document.getElementById("meter");
 const count   = document.getElementById("count");
 const cue     = document.getElementById("cue");
@@ -417,39 +394,202 @@ const caps    = [0,1,2,3].map(i => document.getElementById("cap" + i));
 const rail    = [...document.querySelectorAll("#rail li")];
 const cam     = document.getElementById("cam");
 
-/* where the camera is leaning, and where it is being asked to lean */
-const look = { x:0, y:0, tx:0, ty:0 };
+/* raw pointer position, -1..1 from the centre of the viewport. Nothing is
+   eased here — the animatable below owns all of the smoothing. */
+const lean = { x:0, y:0 };
 
 addEventListener("pointermove", e => {
   if (e.pointerType === "touch") return;      // let a finger scroll in peace
-  look.tx = (e.clientX / innerWidth  - .5) * 2;
-  look.ty = (e.clientY / innerHeight - .5) * 2;
+  lean.x = (e.clientX / innerWidth  - .5) * 2;
+  lean.y = (e.clientY / innerHeight - .5) * 2;
 }, { passive:true });
+
+/* ---------------------------------------------------------
+   the camera as an animatable
+
+   Each frame it is handed target angles rather than final ones,
+   and eases toward them on its own clock. That is what gives the
+   orbit its slight lag behind the scroll and the pointer lean its
+   drift, without a hand-written follow anywhere.
+   --------------------------------------------------------- */
+const camera = reduced ? null : createAnimatable(cam, {
+  x:       { unit:"px",  duration:480, ease:"outQuad" },
+  y:       { unit:"px",  duration:480, ease:"outQuad" },
+  rotateX: { unit:"deg", duration:380, ease:"outQuad" },
+  rotateY: { unit:"deg", duration:380, ease:"outQuad" },
+  rotateZ: { unit:"deg", duration:620, ease:"outQuad" },
+  scale:   {             duration:520, ease:"outQuad" }
+});
 
 /* a ramp from 0 → 1 between a and b */
 const up = (t,a,b) => utils.clamp(utils.mapRange(t,a,b,0,1), 0, 1);
 /* a ramp up over [a,b] that falls away again over [c,d] */
 const band = (t,a,b,c,d) => Math.min(up(t,a,b), 1 - up(t,c,d));
 
-/* ---------------------------------------------------------
-   build the nerve volume
+/* =========================================================
+   THE DEPTH RENDERER
 
-   One image, repeated through depth. Where the plates overlap
-   their alpha accumulates, so the cord and brain read as solid
-   cores and the fine filaments stay wispy — and the whole thing
-   has real thickness for the camera to travel around.
-   --------------------------------------------------------- */
-const SLICES = innerWidth < 900 ? 7 : 13;
-const SPREAD = 104;                              // px of depth the volume fills
+   Every plate shares one depth map. The shader offsets each
+   pixel's lookup by its own depth times the camera vector, so
+   near pixels travel further across the frame than far ones —
+   which is what parallax actually is. Nothing is rotated; the
+   dimensionality comes out of the depth buffer.
 
-for (let i = 0; i < SLICES; i++){
-  const img = new Image();
-  img.src = "assets/trout-nerves.png";
-  img.decoding = "async";
-  img.alt = "";
-  img.style.transform = "translateZ(" + ((i / (SLICES - 1) - .5) * SPREAD).toFixed(1) + "px)";
-  img.style.opacity   = (1.9 / SLICES).toFixed(3);
-  vol.appendChild(img);
+   The offset is solved by fixed-point iteration rather than a
+   single step, so a near surface can occlude what sits behind
+   it instead of smearing through it.
+   ========================================================= */
+const VS = `attribute vec2 p; varying vec2 vUv;
+void main(){ vUv = p * .5 + .5; gl_Position = vec4(p, 0., 1.); }`;
+
+const FS = `precision highp float;
+varying vec2 vUv;
+uniform sampler2D uVivid, uGhost, uNerve, uDepth;
+uniform vec2  uCover, uCam;
+uniform float uMix, uGhostDim, wNerve, uDark, uLift, uRise, uGrain;
+
+/* the plates are inset a touch so a displaced lookup can never reach the
+   true edge of the texture and smear the last column of pixels */
+vec2 fit(vec2 uv){ return (uv - .5) * uCover * .975 + .5; }
+
+/* settle on the uv whose own depth justifies its displacement */
+vec2 march(vec2 uv, vec2 cam){
+  vec2 q = uv;
+  for (int i = 0; i < 5; i++){
+    float d = texture2D(uDepth, clamp(q, .001, .999)).r;
+    q = uv + cam * (d - .5);
+  }
+  return clamp(q, .0, 1.);
+}
+
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+void main(){
+  vec2 base = fit(vUv);
+  vec2 pb   = march(base, uCam);
+  float d   = texture2D(uDepth, pb).r;
+
+  /* Depth-graded dissolve. The glass spreads from the near core of the body
+     outward rather than the whole frame fading at once, which keeps the two
+     plates from reading as a double exposure mid-transition. Both plates now
+     share one background, so outside the fish this changes nothing at all. */
+  float g = smoothstep(0., 1., clamp(uMix * 1.5 - .25 - (.5 - d) * .55, 0., 1.));
+
+  vec3 col = mix(texture2D(uVivid, pb).rgb,
+                 texture2D(uGhost, pb).rgb * uGhostDim, g);
+
+  /* the river drops away faster than the fish does, so the eye is walked
+     inward rather than the whole frame simply going dim */
+  col *= 1. - uDark * mix(1.15, .55, smoothstep(.35, .62, d));
+
+  /* the wiring rides a deeper camera vector, so it separates from the body
+     it sits inside as the frame moves */
+  vec2 pn = march(base, uCam * uLift) - vec2(0., uRise);
+  vec4 n  = texture2D(uNerve, clamp(pn, .0, 1.));
+  col += n.rgb * n.a * wNerve;
+
+  /* grade: a little contrast, a soft vignette, and enough grain to keep the
+     dark gradients from banding on an 8-bit display */
+  col = clamp(col, 0., 1.);
+  col = col * col * (3. - 2. * col) * .34 + col * .66;
+
+  float v = length((vUv - .5) * vec2(1.06, 1.));
+  col *= 1. - smoothstep(.42, .92, v) * .38;
+
+  col += (hash(vUv * 2048. + uGrain) - .5) * .022;
+
+  gl_FragColor = vec4(col, 1.);
+}`;
+
+const gl = canvas.getContext("webgl", { alpha:false, antialias:false, depth:false });
+let scene = null;
+
+if (gl){
+  const sh = (type, src) => {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const U = n => gl.getUniformLocation(prog, n);
+  const u = {
+    cover:U("uCover"), cam:U("uCam"),   dark:U("uDark"),
+    lift:U("uLift"),   rise:U("uRise"), grain:U("uGrain"),
+    mix:U("uMix"),     dim:U("uGhostDim"), wN:U("wNerve")
+  };
+
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+
+  const mkTex = (unit, name) => {
+    const tex = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    // one grey pixel so the first frames draw something rather than nothing
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([10,10,11,255]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.uniform1i(U(name), unit);
+    return tex;
+  };
+
+  const plates = [
+    { unit:0, name:"uVivid", src:"assets/trout-vivid.jpg"  },
+    { unit:1, name:"uGhost", src:"assets/trout-ghost.jpg"  },
+    { unit:2, name:"uNerve", src:"assets/trout-nerves.png" },
+    { unit:3, name:"uDepth", src:"assets/trout-depth.png"  }
+  ];
+
+  let aspect = 1800 / 1004;
+  plates.forEach(pl => {
+    pl.tex = mkTex(pl.unit, pl.name);
+    const img = new Image();
+    img.onload = () => {
+      gl.activeTexture(gl.TEXTURE0 + pl.unit);
+      gl.bindTexture(gl.TEXTURE_2D, pl.tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      if (pl.unit === 0) aspect = img.naturalWidth / img.naturalHeight;
+      if (scene){ scene.resize(); render(); }   // a plate can land while the loop is parked
+    };
+    img.src = pl.src;
+  });
+
+  function resize(){
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.max(2, Math.floor(canvas.clientWidth  * dpr));
+    const h = Math.max(2, Math.floor(canvas.clientHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h){
+      canvas.width = w; canvas.height = h;
+      gl.viewport(0, 0, w, h);
+    }
+    // cover-fit the plates into whatever shape the viewport is
+    const ca = canvas.clientWidth / Math.max(1, canvas.clientHeight);
+    if (ca > aspect) gl.uniform2f(u.cover, 1, aspect / ca);
+    else             gl.uniform2f(u.cover, ca / aspect, 1);
+  }
+
+  addEventListener("resize", resize, { passive:true });
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(resize).observe(canvas);
+
+  scene = { u, resize, draw: () => gl.drawArrays(gl.TRIANGLES, 0, 3) };
+  resize();
+} else {
+  cam.classList.add("fallback");
 }
 
 const state = { t: 0 };
@@ -457,46 +597,38 @@ const state = { t: 0 };
 function render(){
   const t = utils.clamp(state.t, 0, 1);
 
-  /* ── layer 1→2: the body turns to glass ── */
-  const toGhost = up(t, .18, .38);
-  vivid.style.opacity = 1 - toGhost;
-
-  /* ...and then dims again once the nerves are carrying the frame */
-  ghost.style.opacity = toGhost * (1 - up(t, .52, .78) * .78);
-
-  /* ── the river drains away so the nerves have somewhere dark to sit ── */
-  dark.style.opacity = up(t, .46, .74) * .88;
-
-  /* ── layer 3: the wiring comes up ── */
-  vol.style.opacity = up(t, .44, .64);
-
-  /* the photographic plates retire before the wide orbit begins — they are
-     flat, and past about 15 degrees a flat plate starts to read as a card */
-  stack.style.opacity = 1 - up(t, .78, .95);
-
-  /* ── layer 4: the stack comes apart ──
-     the two groups also drift sideways by different amounts, which under the
-     rotating camera below reads as real depth between them */
-  const e  = up(t, .78, 1);
-  const px = utils.mapRange(t, 0, 1, -1.1, 1.1);
-  grpBody.style.transform = "translate3d(" + (px * .5) + "%," + (e * 7) + "vh,0) scale(" + (1 - e * .04) + ")";
-  vol.style.transform     = "translate3d(" + (px * 1.7) + "%," + (e * -5) + "vh,0) scale(" + (1 + e * .06) + ")";
-
   /* ── the camera ──
-     A restrained drift while the photographs are still carrying the frame,
-     then a real orbit once only the nerve volume is left — that volume has
-     genuine thickness, so swinging wide around it reveals depth rather than
-     flattening. A small lean toward the pointer keeps it alive throughout. */
-  if (!reduced){
-    const orbit = up(t, .52, 1);
-    const yaw   = utils.mapRange(t, 0, 1, -6, 6) + orbit * 40 + look.x * 3.2;
-    const pitch = Math.sin(t * Math.PI) * 2 - .5 - orbit * 3 - look.y * 2;
-    const roll  = Math.sin(t * Math.PI * 1.15) * 1.15;
-    const dolly = 1 + t * .10;
-    cam.style.transform =
-      "translate3d(" + (-px * .6) + "%," + (Math.sin(t * Math.PI) * -1.1) + "%,0)" +
-      " scale(" + dolly + ")" +
-      " rotateX(" + pitch + "deg) rotateY(" + yaw + "deg) rotateZ(" + roll + "deg)";
+     Only a few degrees of real rotation: past roughly fifteen a flat plate
+     gives itself away, and the depth buffer is doing the actual work. These
+     are targets — the animatable eases into them, and the shader reads the
+     eased angle back so both stay on one value. */
+  if (camera){
+    camera.rotateY(utils.mapRange(t, 0, 1, -7, 7) + lean.x * 4);
+    camera.rotateX(Math.sin(t * Math.PI) * 1.6 - .4 - lean.y * 2.6);
+    camera.rotateZ(Math.sin(t * Math.PI * 1.15) * .8);
+    camera.scale(1 + t * .06);
+  }
+
+  /* ── the plates ── */
+  if (scene){
+    gl.uniform1f(scene.u.mix,  up(t, .16, .42));            // vivid → glass
+    gl.uniform1f(scene.u.dim,  1 - up(t, .52, .80) * .72);  // then the glass dims
+    gl.uniform1f(scene.u.wN,   up(t, .44, .64));
+    gl.uniform1f(scene.u.dark, up(t, .46, .80) * .70);
+    gl.uniform1f(scene.u.grain, (performance.now() * .001) % 100);
+
+    /* the wiring pulls away from the body it is threaded through */
+    const sep = up(t, .70, 1);
+    gl.uniform1f(scene.u.lift, 1 + sep * 1.9);
+    gl.uniform1f(scene.u.rise, sep * .035);
+
+    /* the eased camera angle, read straight back off the animatable, becomes
+       the parallax vector. Degrees in, texture-space offset out. */
+    const yaw   = camera ? parseFloat(utils.get(cam, "rotateY")) || 0 : 0;
+    const pitch = camera ? parseFloat(utils.get(cam, "rotateX")) || 0 : 0;
+    gl.uniform2f(scene.u.cam, (yaw / 7) * .052, (pitch / 7) * .030);
+
+    scene.draw();
   }
 
   /* ── captions ── */
@@ -544,11 +676,6 @@ function frame(now){
   // refresh rate: ~10% of the remaining gap per frame at 60Hz
   state.t += (target - state.t) * (1 - Math.pow(.0015, dt));
   if (Math.abs(target - state.t) < .0002) state.t = target;   // settle exactly
-
-  // the camera lean trails the pointer more slowly than the scrub does
-  const lk = 1 - Math.pow(.02, dt);
-  look.x += (look.tx - look.x) * lk;
-  look.y += (look.ty - look.y) * lk;
 
   render();
   if (running) requestAnimationFrame(frame);
