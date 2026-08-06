@@ -238,9 +238,9 @@ footer a{ color:var(--dim); }
     <div class="shell intro">
       <h1 aria-hidden="true">Braydon&nbsp;Glass</h1>
       <p class="sub">
-        Computer Science graduate in Philadelphia. Right now I'm building
-        <b>AI-Council</b>, a team of local language models that argue about code before they
-        agree to write it. Looking for IT support work while I keep building.
+        Computer Science graduate in Philadelphia. I'm building <b>AI-Council</b>, a set of
+        local language models that argue about code before they agree to write any. Looking
+        for IT support work in the meantime.
       </p>
       <div class="meta">
         <span><i>&bull;</i> Philadelphia, PA</span>
@@ -258,23 +258,23 @@ footer a{ color:var(--dim); }
         <ul class="now">
           <li>
             <b class="on">Building</b>
-            <span><strong>AI-Council.</strong> Designing the agent roles and the execution
-              pipeline that runs between them. Most of the work right now is prompts and
-              workflow rather than model choice.</span>
+            <span><strong>AI-Council.</strong> Agent roles, and the pipeline that carries work
+              between them. Almost none of the difficulty is model choice. Swapping Mistral for
+              Qwen changes less than rewriting one system prompt, which I did not expect.</span>
           </li>
           <li>
             <b>Learning</b>
-            <span>Multi-agent design, Python architecture, and the parts of software
-              engineering that only show up once a project outgrows one file.</span>
+            <span>The parts of software engineering that only show up once a project outgrows
+              a single file.</span>
           </li>
           <li>
             <b>Studying</b>
-            <span>A Microsoft Learn path toward cloud fundamentals and certification.</span>
+            <span>Microsoft Learn, working toward cloud fundamentals.</span>
           </li>
           <li>
-            <b>Looking for</b>
-            <span>IT support and help desk work in the Philadelphia area. On-site, hybrid,
-              or remote.</span>
+            <b>Want</b>
+            <span>IT support or help desk, Philadelphia. On-site, hybrid or remote, no
+              preference.</span>
           </li>
         </ul>
       </div>
@@ -293,19 +293,40 @@ footer a{ color:var(--dim); }
             <span class="tag live">In development</span>
           </header>
           <p>
-            A local AI software engineering team. Specialised agents take separate roles, a
-            writer, a reviewer, a tester, and pass work between them instead of one model
-            trying to do everything in a single pass. Everything runs on my own machine
-            through Ollama, so there is no API bill and no data leaving the box.
+            A local AI software team. One agent writes, one reviews, one tests, and they pass
+            work between them instead of a single model trying to do all three in one pass.
+            It runs on my own machine through Ollama, so there is no API bill and nothing
+            leaves the box.
           </p>
           <p>
-            The interesting problem is not the models, it is the orchestration: deciding who
-            speaks when, what each agent is allowed to see, and how disagreement gets
-            resolved rather than averaged away.
+            The hard part is not the models. It is deciding who speaks when, what each agent
+            is allowed to see, and how a disagreement gets settled instead of averaged into
+            mush. Most of my time goes into prompts and control flow.
           </p>
           <div class="stack">
             <span>Python</span><span>Ollama</span><span>Mistral</span><span>Llama</span>
             <span>Qwen</span><span>JSON config</span><span>venv</span>
+          </div>
+        </article>
+
+        <article class="proj">
+          <header>
+            <h3><a href="trout.html">Trout Anatomy</a></h3>
+            <span class="tag live">Live</span>
+          </header>
+          <p>
+            One photograph of a spawning rainbow trout, taken apart a layer at a time as you
+            scroll. Skin and muscle turn to glass, the skeleton carries the shape from the
+            inside, then the nervous system lifts clear of the body it was threaded through.
+          </p>
+          <p>
+            The layers are separate images composited in a WebGL fragment shader, with a depth
+            map deciding what shows through what. anime.js scrubs the whole sequence against
+            scroll position. It started as an excuse to learn shaders and turned into the
+            thing I am proudest of on here.
+          </p>
+          <div class="stack">
+            <span>WebGL</span><span>GLSL</span><span>anime.js</span><span>Canvas</span>
           </div>
         </article>
 
@@ -316,9 +337,9 @@ footer a{ color:var(--dim); }
           </header>
           <p>
             Seven tables covering products, suppliers, warehouses, purchase orders and stock
-            movement. Stock on hand is not a stored column, it is derived from a ledger of
-            every transaction, so the number cannot drift out of sync with reality. Seventeen
-            queries on top using joins, CTEs and window functions.
+            movement. Stock on hand is not a stored column. It is derived from a ledger of
+            every transaction, so the number cannot quietly drift away from reality. Seventeen
+            queries sit on top of it using joins, CTEs and window functions.
           </p>
           <div class="stack">
             <span>SQL</span><span>Schema design</span><span>Window functions</span><span>Python</span>
@@ -331,10 +352,10 @@ footer a{ color:var(--dim); }
             <span class="tag">Web app</span>
           </header>
           <p>
-            A Flask app for searching adoptable cats by name, breed, size and maximum age.
-            Records seed from a spreadsheet into SQLite, and the search endpoint builds its
-            query from whichever filters you actually used rather than running one rigid
-            statement every time.
+            A Flask app for searching adoptable cats by name, breed, size and age. Records
+            seed from a spreadsheet into SQLite, and the search endpoint assembles its query
+            from whichever filters you actually used rather than running one rigid statement
+            every time.
           </p>
           <div class="stack">
             <span>Python</span><span>Flask</span><span>SQLite</span><span>HTML/CSS</span>
@@ -343,33 +364,16 @@ footer a{ color:var(--dim); }
 
         <article class="proj">
           <header>
-            <h3>This site</h3>
+            <h3><a href="games.html">Arcade</a></h3>
             <span class="tag">Live</span>
           </header>
           <p>
-            Two static files and no build step. The panel at the top is a hand-written WebGL
-            shader: a grid rendered to a texture, then resampled through a sphere-refraction
-            lens that follows your cursor. The text and section reveals run on anime.js,
-            vendored into the repository so there is no CDN call. Deployed straight from the
-            repository with GitHub Pages.
+            Seven games on a 2D canvas. Tetris with a seven-bag randomiser, Minesweeper where
+            the first click is always safe, Snake, Flap, Memory, a reaction test, and a
+            slither.io-style arena. No engine, no libraries.
           </p>
           <div class="stack">
-            <span>WebGL</span><span>GLSL</span><span>anime.js</span><span>HTML/CSS</span><span>GitHub Pages</span>
-          </div>
-        </article>
-
-        <article class="proj">
-          <header>
-            <h3>Python games</h3>
-            <span class="tag">Practice</span>
-          </header>
-          <p>
-            Small games written to learn by building rather than by reading. There is also
-            an <a href="games.html">arcade of browser games</a> here, seven of them, written
-            from scratch in plain JavaScript.
-          </p>
-          <div class="stack">
-            <span>Python</span><span>Pygame</span><span>JavaScript</span><span>Canvas</span>
+            <span>JavaScript</span><span>Canvas</span><span>localStorage</span>
           </div>
         </article>
 
@@ -400,26 +404,24 @@ footer a{ color:var(--dim); }
       <h2><em>04</em> &nbsp;Background</h2>
       <div class="body">
         <p>
-          I have a Computer Science degree from <strong>Commonwealth University-Mansfield</strong>.
-          The part of the work I actually enjoy is the troubleshooting: reproducing the
-          problem, reading the whole error instead of skimming it, and changing one thing at
-          a time until something gives.
+          Computer Science degree, <strong>Commonwealth University-Mansfield</strong>. What I
+          actually like is the troubleshooting. Reproduce it, read the whole error instead of
+          skimming the last line, change one thing at a time. It is slow and it works.
         </p>
         <p>
-          I have built and maintained <strong>four PCs</strong>, which is where most of my
-          hardware knowledge came from. Picking parts that work together, BIOS and driver
-          setup, and the unglamorous maintenance afterwards when a fan starts dying or
-          Windows breaks itself.
+          I have built and maintained <strong>four PCs</strong>, which is where the hardware
+          knowledge came from. Parts that play nicely together, BIOS and drivers, then the
+          unglamorous half where a fan starts dying or Windows breaks itself on a Tuesday.
         </p>
         <p>
-          I have also worked customer-facing jobs <strong>since 2017</strong>: retail, food
-          service, moving, sales. None of it was software. It is where I learned to stay
-          steady when someone is frustrated and explain a fix in plain language, which for
-          help desk work counts for as much as the technical side.
+          Before any of that I worked customer-facing jobs <strong>since 2017</strong>. Retail,
+          food service, moving, sales. None of it was software. It is where I learned to stay
+          calm with someone who is already annoyed and explain a fix without jargon, and for
+          help desk work that matters as much as knowing the command.
         </p>
         <p>
-          No professional software experience yet. Everything above is coursework, personal
-          projects, or things I built because I wanted to know how they worked.
+          No professional software experience yet. Everything above is coursework or something
+          I built because I wanted to know how it worked.
         </p>
       </div>
     </div>
@@ -434,8 +436,8 @@ footer a{ color:var(--dim); }
           <li><a href="mailto:braydonglass22@gmail.com">braydonglass22@gmail.com <span>Email</span></a></li>
           <li><a href="https://www.linkedin.com/in/braydonglass" target="_blank" rel="noopener">linkedin.com/in/braydonglass <span>LinkedIn</span></a></li>
           <li><a href="https://github.com/braydonglass" target="_blank" rel="noopener">github.com/braydonglass <span>GitHub</span></a></li>
+          <li><a href="trout.html">Trout Anatomy <span>WebGL</span></a></li>
           <li><a href="games.html">Arcade <span>7 games</span></a></li>
-          <li><a href="trout.html">Trout anatomy <span>Scroll piece</span></a></li>
         </ul>
       </div>
     </div>
