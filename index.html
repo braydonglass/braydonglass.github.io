@@ -293,15 +293,18 @@ footer a{ color:var(--dim); }
             <span class="tag live">In development</span>
           </header>
           <p>
-            A local AI software team. One agent writes, one reviews, one tests, and they pass
-            work between them instead of a single model trying to do all three in one pass.
+            A local AI software team. One agent writes, one reviews, one tests, and they hand
+            work between them instead of one model trying to do all three in a single pass.
             It runs on my own machine through Ollama, so there's no API bill and nothing
             leaves the box.
           </p>
           <p>
-            The hard part isn't the models. It's deciding who speaks when, what each agent
-            is allowed to see, and how a disagreement gets settled instead of averaged into
-            mush. Most of my time goes into prompts and control flow.
+            What I'm actually designing is the org chart. Who speaks first, what each agent is
+            allowed to see, and what happens when the reviewer and the writer disagree.
+            Averaging the two answers is the obvious move and it's the wrong one, because you
+            end up with something neither agent would have put its name on. So the reviewer
+            holds a veto and has to state a reason, and the writer gets another pass. Most of
+            the project is that one rule, worked out properly.
           </p>
           <div class="stack">
             <span>Python</span><span>Ollama</span><span>Mistral</span><span>Llama</span>
@@ -315,15 +318,22 @@ footer a{ color:var(--dim); }
             <span class="tag live">Live</span>
           </header>
           <p>
-            A product page for a yellow onion, played entirely straight. Black background,
-            Playfair display type, one gold accent pulled off the skin. It never winks at you,
-            and every technical claim on it is true of Allium cepa.
+            A product page for a yellow onion, art-directed like a watch campaign and played
+            completely straight. Black field, Playfair display type, one gold accent lifted off
+            the skin. It only works because it never winks.
           </p>
           <p>
-            The hero is 144 JPEG frames drawn to a canvas against scroll position rather than a
-            video element, so seeking is instant instead of a fight with the browser. I rendered
-            the source clip myself: a raytracer in Rust that treats the bulb as eleven nested
-            ellipsoid shells and opens a wedge through them as the camera comes around front.
+            The rule I set was that every claim on the page has to be true of Allium cepa.
+            Eleven concentric scales. 8.2 µmol of pyruvate per gram. Three outer scales dried
+            down into the tunic. Once the spec sheet is real, it stops being a joke about
+            onions and turns into a joke about product pages.
+          </p>
+          <p>
+            I ruled out a video element early, because video seeking stutters the moment you
+            tie it to scroll. So the bulb is 144 stills painted to a canvas and indexed by
+            scroll position, with a requestAnimationFrame loop reading layout rather than
+            listening for scroll. The camera circles the bulb while it's whole, then opens it:
+            every layer drifting out along its own radial axis, evenly spaced, nothing torn.
           </p>
           <div class="stack">
             <span>Next.js</span><span>TypeScript</span><span>Canvas</span><span>Framer Motion</span>
@@ -343,18 +353,18 @@ footer a{ color:var(--dim); }
             on GitHub</a>.
           </p>
           <p>
-            The constraint made it awkward in a useful way. Every mature tool for the texturing
-            half depends on an NVIDIA-only rasteriser and this machine is AMD, so the pipeline
-            splits the problem instead: the AI parts run on the GPU, and the geometry work goes
-            through plain OpenGL, which doesn't care whose card it is.
+            The hardware forced the interesting decision. Every mature tool for the texturing
+            half assumes an NVIDIA-only rasteriser, and this machine is AMD. Rather than fight
+            that, I split the pipeline down the middle: the AI half runs on the GPU, the
+            geometry half goes through plain OpenGL, which doesn't care whose card it is.
           </p>
           <p>
-            The part I'd defend in an interview is the symmetry handling. A fish photographed
-            side-on has a far flank that is a mirror of the near one, so copying it is correct
-            rather than guessed. A person doesn't work that way, and the shape model produces
-            near-symmetric geometry regardless because it has no data for the back, so no
-            measurement can tell the two cases apart. It mirrors only when told to, and refuses
-            by default.
+            The call I'd defend in an interview is the symmetry handling. A fish photographed
+            side-on has a far flank that mirrors the near one, so copying it is correct rather
+            than guessed. A person doesn't work that way. The shape model produces
+            near-symmetric geometry either way, because it has no data for the back, and no
+            measurement can tell those two cases apart. So it mirrors only when told to. By
+            default it refuses.
           </p>
           <div class="stack">
             <span>Python</span><span>ComfyUI</span><span>ROCm</span><span>SDXL</span>
