@@ -260,7 +260,7 @@ footer a{ color:var(--dim); }
             <b class="on">Building</b>
             <span><strong>AI-Council.</strong> Agent roles, and the pipeline that carries work
               between them. Almost none of the difficulty is model choice. Swapping Mistral for
-              Qwen changes less than rewriting one system prompt, which I did not expect.</span>
+              Qwen changes less than rewriting one system prompt, which I didn't expect.</span>
           </li>
           <li>
             <b>Learning</b>
@@ -295,11 +295,11 @@ footer a{ color:var(--dim); }
           <p>
             A local AI software team. One agent writes, one reviews, one tests, and they pass
             work between them instead of a single model trying to do all three in one pass.
-            It runs on my own machine through Ollama, so there is no API bill and nothing
+            It runs on my own machine through Ollama, so there's no API bill and nothing
             leaves the box.
           </p>
           <p>
-            The hard part is not the models. It is deciding who speaks when, what each agent
+            The hard part isn't the models. It's deciding who speaks when, what each agent
             is allowed to see, and how a disagreement gets settled instead of averaged into
             mush. Most of my time goes into prompts and control flow.
           </p>
@@ -311,22 +311,23 @@ footer a{ color:var(--dim); }
 
         <article class="proj">
           <header>
-            <h3><a href="trout.html">Trout Anatomy</a></h3>
+            <h3><a href="cepa82/">The Cepa 82</a></h3>
             <span class="tag live">Live</span>
           </header>
           <p>
-            One photograph of a spawning rainbow trout, taken apart a layer at a time as you
-            scroll. Skin and muscle turn to glass, the skeleton carries the shape from the
-            inside, then the nervous system lifts clear of the body it was threaded through.
+            A product page for a yellow onion, played entirely straight. Black background,
+            Playfair display type, one gold accent pulled off the skin. It never winks at you,
+            and every technical claim on it is true of Allium cepa.
           </p>
           <p>
-            The layers are separate images composited in a WebGL fragment shader, with a depth
-            map deciding what shows through what. anime.js scrubs the whole sequence against
-            scroll position. It started as an excuse to learn shaders and turned into the
-            thing I am proudest of on here.
+            The hero is 144 JPEG frames drawn to a canvas against scroll position rather than a
+            video element, so seeking is instant instead of a fight with the browser. I rendered
+            the source clip myself: a raytracer in Rust that treats the bulb as eleven nested
+            ellipsoid shells and opens a wedge through them as the camera comes around front.
           </p>
           <div class="stack">
-            <span>WebGL</span><span>GLSL</span><span>anime.js</span><span>Canvas</span>
+            <span>Next.js</span><span>TypeScript</span><span>Canvas</span><span>Framer Motion</span>
+            <span>Rust</span><span>ffmpeg</span>
           </div>
         </article>
 
@@ -337,8 +338,8 @@ footer a{ color:var(--dim); }
           </header>
           <p>
             Seven tables covering products, suppliers, warehouses, purchase orders and stock
-            movement. Stock on hand is not a stored column. It is derived from a ledger of
-            every transaction, so the number cannot quietly drift away from reality. Seventeen
+            movement. Stock on hand isn't a stored column. It's derived from a ledger of
+            every transaction, so the number can't quietly drift away from reality. Seventeen
             queries sit on top of it using joins, CTEs and window functions.
           </p>
           <div class="stack">
@@ -406,16 +407,16 @@ footer a{ color:var(--dim); }
         <p>
           Computer Science degree, <strong>Commonwealth University-Mansfield</strong>. What I
           actually like is the troubleshooting. Reproduce it, read the whole error instead of
-          skimming the last line, change one thing at a time. It is slow and it works.
+          skimming the last line, change one thing at a time. It's slow. It works.
         </p>
         <p>
-          I have built and maintained <strong>four PCs</strong>, which is where the hardware
+          I've built and maintained <strong>four PCs</strong>, which is where the hardware
           knowledge came from. Parts that play nicely together, BIOS and drivers, then the
           unglamorous half where a fan starts dying or Windows breaks itself on a Tuesday.
         </p>
         <p>
           Before any of that I worked customer-facing jobs <strong>since 2017</strong>. Retail,
-          food service, moving, sales. None of it was software. It is where I learned to stay
+          food service, moving, sales. None of it was software. It's where I learned to stay
           calm with someone who is already annoyed and explain a fix without jargon, and for
           help desk work that matters as much as knowing the command.
         </p>
@@ -436,7 +437,7 @@ footer a{ color:var(--dim); }
           <li><a href="mailto:braydonglass22@gmail.com">braydonglass22@gmail.com <span>Email</span></a></li>
           <li><a href="https://www.linkedin.com/in/braydonglass" target="_blank" rel="noopener">linkedin.com/in/braydonglass <span>LinkedIn</span></a></li>
           <li><a href="https://github.com/braydonglass" target="_blank" rel="noopener">github.com/braydonglass <span>GitHub</span></a></li>
-          <li><a href="trout.html">Trout Anatomy <span>WebGL</span></a></li>
+          <li><a href="cepa82/">The Cepa 82 <span>Scroll canvas</span></a></li>
           <li><a href="games.html">Arcade <span>7 games</span></a></li>
         </ul>
       </div>
@@ -446,7 +447,7 @@ footer a{ color:var(--dim); }
   <div class="shell">
     <footer>
       <span>&copy; <span id="yr">2026</span> Braydon Glass</span>
-      <span>No framework &middot; no build step &middot; <a href="https://github.com/braydonglass/braydonglass.github.io">source</a></span>
+      <span>Hand-written HTML, plus one Next.js page &middot; <a href="https://github.com/braydonglass/braydonglass.github.io">source</a></span>
     </footer>
   </div>
 

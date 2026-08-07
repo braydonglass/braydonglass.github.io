@@ -1,11 +1,13 @@
 # braydonglass.github.io
 
-Personal site. Two static pages, no framework and no build step.
+Personal site. Two hand-written static pages, plus one Next.js page that ships as a
+static export.
 
 | File | What it is |
 | --- | --- |
 | `index.html` | Portfolio. Work, stack, background, contact. |
 | `games.html` | Seven browser games written from scratch in plain JavaScript. |
+| `cepa82/` | The Cepa 82. A scroll-scrubbed product page, exported from Next.js. |
 
 ## The lens
 
@@ -18,6 +20,18 @@ unavailable it falls back to drawing the grid flat.
 
 Snake, Memory, Reaction, Tetris, Minesweeper, Flap, and Coil (a slither.io-style arena).
 Every score is kept in `localStorage` on your own machine and is never sent anywhere.
+
+## The Cepa 82
+
+A product page for a yellow onion, written in the register of a watch campaign and never
+breaking character. The hero is 144 JPEG frames drawn to a canvas and indexed by scroll
+position, not a `<video>` element, because video seeking stutters when you scrub it. A
+`requestAnimationFrame` loop reads `getBoundingClientRect()` each frame; there is no
+scroll listener.
+
+The source clip is a raytracer I wrote in Rust with no dependencies. It models the bulb as
+eleven nested ellipsoid shells, opens an animated wedge through them, and pipes raw RGB
+straight into ffmpeg. Every specification on the page is true of Allium cepa.
 
 ## Motion
 
@@ -40,5 +54,8 @@ Then open http://localhost:8000. Nothing needs installing or compiling.
 
 ## Deploying
 
-Served by GitHub Pages from the default branch, root folder. Because both pages are plain
-static HTML, no Actions workflow and no build step are involved.
+Served by GitHub Pages from the default branch, root folder. No Actions workflow: the two
+hand-written pages need no build, and `cepa82/` is committed already built. Its source
+lives outside this repo, so rebuilding it means running `npm run export:pages` there and
+copying `out/` back over `cepa82/`. The `.nojekyll` file at the root is what stops Pages
+from swallowing `cepa82/_next/`.
