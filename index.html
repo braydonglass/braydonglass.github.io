@@ -333,6 +333,37 @@ footer a{ color:var(--dim); }
 
         <article class="proj">
           <header>
+            <h3>Local Image-to-3D</h3>
+            <span class="tag">3D pipeline</span>
+          </header>
+          <p>
+            Drop in a photograph, get back a textured 3D model light enough to put on a web
+            page. Shape generation and texturing both run here on my own GPU, so there's no
+            per-asset cost and nothing gets uploaded. <a href="https://github.com/braydonglass/local-image-to-3d">Source
+            on GitHub</a>.
+          </p>
+          <p>
+            The constraint made it awkward in a useful way. Every mature tool for the texturing
+            half depends on an NVIDIA-only rasteriser and this machine is AMD, so the pipeline
+            splits the problem instead: the AI parts run on the GPU, and the geometry work goes
+            through plain OpenGL, which doesn't care whose card it is.
+          </p>
+          <p>
+            The part I'd defend in an interview is the symmetry handling. A fish photographed
+            side-on has a far flank that is a mirror of the near one, so copying it is correct
+            rather than guessed. A person doesn't work that way, and the shape model produces
+            near-symmetric geometry regardless because it has no data for the back, so no
+            measurement can tell the two cases apart. It mirrors only when told to, and refuses
+            by default.
+          </p>
+          <div class="stack">
+            <span>Python</span><span>ComfyUI</span><span>ROCm</span><span>SDXL</span>
+            <span>OpenGL</span><span>three.js</span><span>Draco</span>
+          </div>
+        </article>
+
+        <article class="proj">
+          <header>
             <h3>Inventory Management System</h3>
             <span class="tag">SQL</span>
           </header>
